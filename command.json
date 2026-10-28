@@ -177,6 +177,36 @@
       "commandName": "save_family",
       "description": "Save the family document or save it as .rfa",
       "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "get_topography",
+      "description": "List topography surfaces and toposolids with points, elevations and areas",
+      "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "create_topography",
+      "description": "Create a topography surface or toposolid from survey points",
+      "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "edit_topography_points",
+      "description": "Add, delete or change elevation of topography points",
+      "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "create_topography_subregion",
+      "description": "Create a site subregion or toposolid subdivision",
+      "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "get_topography_elevation",
+      "description": "Get terrain elevation at plan points",
+      "assemblyPath": "RevitMCPCommandSet.dll"
+    },
+    {
+      "commandName": "convert_topography_to_toposolid",
+      "description": "Convert a topography surface to a toposolid (Revit 2024+)",
+      "assemblyPath": "RevitMCPCommandSet.dll"
     }
   ]
 }
