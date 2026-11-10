@@ -60,17 +60,17 @@ namespace RevitMCPCommandSet.Commands.ExecuteDynamicCode
             {
                 var doc = app.ActiveUIDocument.Document;
 
+                // Транзакции, открытые самим кодом (в т.ч. в семействах через EditFamily), ловим событием приложения
+                if (suppressor != null)
+                {
+                    failuresHandler = (sender, e) =>
+                        e.SetProcessingResult(suppressor.Process(e.GetFailuresAccessor()));
+                    app.Application.FailuresProcessing += failuresHandler;
+                }
+
                 object result;
                 if (_transactionMode == TransactionModeNone)
                 {
-                    // Код сам открывает транзакции — препроцессор к ним не привязать, поэтому слушаем событие приложения
-                    if (suppressor != null)
-                    {
-                        failuresHandler = (sender, e) =>
-                            e.SetProcessingResult(suppressor.Process(e.GetFailuresAccessor()));
-                        app.Application.FailuresProcessing += failuresHandler;
-                    }
-
                     result = CompileAndExecuteCode(
                         code: _generatedCode,
                         doc: doc,

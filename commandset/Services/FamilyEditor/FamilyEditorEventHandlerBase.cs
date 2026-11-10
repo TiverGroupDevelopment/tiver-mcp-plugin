@@ -1,7 +1,9 @@
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.UI;
 using Newtonsoft.Json.Linq;
 using RevitMCPCommandSet.Models.Common;
+using RevitMCPCommandSet.Utils;
 using RevitMCPCommandSet.Utils.FamilyEditor;
 using RevitMCPSDK.API.Interfaces;
 
@@ -11,6 +13,7 @@ public abstract class FamilyEditorEventHandlerBase : IExternalEventHandler, IWai
 {
     private readonly ManualResetEvent _resetEvent = new ManualResetEvent(false);
     private JObject _arguments = new JObject();
+    private FailureSuppressor _failures = new FailureSuppressor();
 
     public AIResult<object> Result { get; private set; }
 
@@ -31,6 +34,13 @@ public abstract class FamilyEditorEventHandlerBase : IExternalEventHandler, IWai
 
     public void Execute(UIApplication app)
     {
+        // Ловит ошибки вне транзакции Edit: EditFamily, LoadFamily в проект и т.п.
+        _failures = new FailureSuppressor();
+        var failures = _failures;
+        EventHandler<FailuresProcessingEventArgs> failuresHandler = (sender, e) =>
+            e.SetProcessingResult(failures.Process(e.GetFailuresAccessor()));
+        app.Application.FailuresProcessing += failuresHandler;
+
         try
         {
             Result = new AIResult<object> { Success = true, Message = "OK", Response = Run(app, _arguments) };
@@ -41,6 +51,7 @@ public abstract class FamilyEditorEventHandlerBase : IExternalEventHandler, IWai
         }
         finally
         {
+            app.Application.FailuresProcessing -= failuresHandler;
             TaskCompleted = true;
             _resetEvent.Set();
         }
@@ -56,35 +67,43 @@ public abstract class FamilyEditorEventHandlerBase : IExternalEventHandler, IWai
         return new { family = session.FamilyName, result = reader(session) };
     }
 
-    protected static object Edit(UIApplication app, JObject args, string transactionName, Func<Document, object> action)
+    protected object Edit(UIApplication app, JObject args, string transactionName, Func<Document, object> action)
     {
         using var session = FamilyEditSession.Open(app, JsonArgs.OptionalString(args, "familyName"));
-        var collector = new WarningCollector();
         object result;
 
         using (var transaction = new Transaction(session.Document, transactionName))
         {
             var options = transaction.GetFailureHandlingOptions();
-            options.SetFailuresPreprocessor(collector);
+            options.SetFailuresPreprocessor(_failures);
             transaction.SetFailureHandlingOptions(options);
             transaction.Start();
             result = action(session.Document);
             var status = transaction.Commit();
-            if (status != TransactionStatus.Committed)
+            if (status != TransactionStatus.Committed || _failures.HasErrors)
             {
-                throw new InvalidOperationException($"Транзакция '{transactionName}' не зафиксирована: {status}");
+                throw new InvalidOperationException($"Транзакция '{transactionName}' не зафиксирована: {status}{DescribeErrors()}");
             }
         }
 
         session.LoadIntoProject(JsonArgs.OptionalBool(args, "overwriteProjectValues", true));
+        if (_failures.HasErrors)
+        {
+            throw new InvalidOperationException($"Семейство '{session.FamilyName}' изменено, но не загружено в проект{DescribeErrors()}");
+        }
 
         return new
         {
             family = session.FamilyName,
             loadedIntoProject = session.IsDetached,
-            warnings = collector.Warnings,
+            warnings = _failures.Warnings,
             result
         };
+    }
+
+    private string DescribeErrors()
+    {
+        return _failures.HasErrors ? $". Revit отменил изменения: {string.Join("; ", _failures.Errors.Take(3))}" : string.Empty;
     }
 
     private static string Flatten(Exception ex)
