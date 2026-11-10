@@ -271,10 +271,12 @@ namespace revit_mcp_plugin.UI
                 string registryFilePath = PathManager.GetCommandRegistryFilePath();
                 // 读取现有的注册表以保留完整的命令信息
                 Dictionary<string, CommandConfig> existingCommandsDict = new Dictionary<string, CommandConfig>();
+                IDictionary<string, Newtonsoft.Json.Linq.JToken> otherData = null;
                 if (File.Exists(registryFilePath))
                 {
                     string registryJson = File.ReadAllText(registryFilePath);
                     var existingRegistry = JsonConvert.DeserializeObject<CommandRegistryJson>(registryJson);
+                    otherData = existingRegistry?.OtherData;
                     if (existingRegistry?.Commands != null)
                     {
                         foreach (var cmd in existingRegistry.Commands)
@@ -286,6 +288,7 @@ namespace revit_mcp_plugin.UI
                 // 创建新的registry对象
                 CommandRegistryJson registry = new CommandRegistryJson();
                 registry.Commands = new List<CommandConfig>();
+                registry.OtherData = otherData;
                 // 收集所有"已启用"的命令
                 foreach (var commandSet in commandSets)
                 {
@@ -389,6 +392,11 @@ namespace revit_mcp_plugin.UI
     public class CommandRegistryJson
     {
         public List<CommandConfig> Commands { get; set; } = new List<CommandConfig>();
+
+        // Other top-level keys of commandRegistry.json (e.g. "settings" with the port).
+        // Kept so that saving the command list does not drop them.
+        [JsonExtensionData]
+        public IDictionary<string, Newtonsoft.Json.Linq.JToken> OtherData { get; set; }
     }
 
     public class CommandJson
