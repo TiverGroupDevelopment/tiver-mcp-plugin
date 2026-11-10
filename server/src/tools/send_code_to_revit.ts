@@ -26,12 +26,19 @@ export function registerSendCodeToRevitTool(server: McpServer) {
           "Optional execution parameters that will be passed to your code"
         ),
       transactionMode: transactionModeSchema,
+      suppressFailures: z
+        .boolean()
+        .default(true)
+        .describe(
+          "Suppress Revit failure dialogs: warnings are deleted and returned in 'warnings', errors roll the transaction back and are returned in 'failures'. Works in both transaction modes. The 'duplicate types' dialog when copying between documents is not a failure; handle it in code via CopyPasteOptions.SetDuplicateTypeNamesHandler."
+        ),
     },
     async (args, extra) => {
       const params = {
         code: args.code,
         parameters: args.parameters || [],
         transactionMode: args.transactionMode,
+        suppressFailures: args.suppressFailures,
       };
 
       try {

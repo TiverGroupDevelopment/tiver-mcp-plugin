@@ -20,7 +20,10 @@ namespace revit_mcp_plugin.Core
         private TcpListener _listener;
         private Thread _listenerThread;
         private bool _isRunning;
-        private int _port = 8080;
+        private const int DefaultPort = 8080;
+        private const int PortRange = 10;
+        private int _basePort = DefaultPort;
+        private int _port = DefaultPort;
         private UIApplication _uiApp;
         private ICommandRegistry _commandRegistry;
         private ILogger _logger;
@@ -78,13 +81,12 @@ namespace revit_mcp_plugin.Core
             configManager.LoadConfiguration();
             
 
-            //// 从配置中读取服务端口
-            //// Read the service port from the configuration.
-            //if (configManager.Config.Settings.Port > 0)
-            //{
-            //    _port = configManager.Config.Settings.Port;
-            //}
-            _port = 8080; // 固定端口号 - Hard-wired port number.
+            // Base port from configuration (default 8080). The actual port may be
+            // higher if the base port is taken by another Revit instance - see Start().
+            _basePort = configManager.Config?.Settings?.Port > 0
+                ? configManager.Config.Settings.Port
+                : DefaultPort;
+            _port = _basePort;
 
             // 加载命令
             // Load command.
@@ -99,22 +101,37 @@ namespace revit_mcp_plugin.Core
         {
             if (_isRunning) return;
 
-            try
+            // Try base port, then the next ones, so several Revit instances can run side by side.
+            for (int port = _basePort; port < _basePort + PortRange; port++)
             {
+                TcpListener listener = null;
+                try
+                {
+                    listener = new TcpListener(IPAddress.Any, port);
+                    listener.Start();
+                }
+                catch (SocketException)
+                {
+                    listener?.Stop();
+                    _logger?.Info($"Port {port} is busy, trying next");
+                    continue;
+                }
+
+                _listener = listener;
+                _port = port;
                 _isRunning = true;
-                _listener = new TcpListener(IPAddress.Any, _port);
-                _listener.Start();
 
                 _listenerThread = new Thread(ListenForClients)
                 {
                     IsBackground = true
                 };
-                _listenerThread.Start();              
+                _listenerThread.Start();
+                _logger?.Info($"Socket service listening on port {_port}");
+                return;
             }
-            catch (Exception)
-            {
-                _isRunning = false;
-            }
+
+            _isRunning = false;
+            _logger?.Error($"No free port in range {_basePort}-{_basePort + PortRange - 1}");
         }
 
         public void Stop()
@@ -172,6 +189,9 @@ namespace revit_mcp_plugin.Core
             try
             {
                 byte[] buffer = new byte[8192];
+                // Сервер не разделяет сообщения, а TCP режет длинные запросы на куски:
+                // копим байты, пока не соберётся целый JSON-объект.
+                var pending = new MemoryStream();
 
                 while (_isRunning && tcpClient.Connected)
                 {
@@ -197,7 +217,19 @@ namespace revit_mcp_plugin.Core
                         break;
                     }
 
-                    string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                    pending.Write(buffer, 0, bytesRead);
+                    int messageLength = FindCompleteJsonLength(pending.GetBuffer(), (int)pending.Length);
+                    if (messageLength < 0)
+                    {
+                        continue;
+                    }
+
+                    string message = Encoding.UTF8.GetString(pending.GetBuffer(), 0, messageLength);
+                    var rest = (int)pending.Length - messageLength;
+                    var tail = new byte[rest];
+                    Array.Copy(pending.GetBuffer(), messageLength, tail, 0, rest);
+                    pending = new MemoryStream();
+                    pending.Write(tail, 0, rest);
                     System.Diagnostics.Trace.WriteLine($"收到消息: {message}\nReceived message: {message}");
 
                     string response = ProcessJsonRPCRequest(message);
@@ -216,6 +248,41 @@ namespace revit_mcp_plugin.Core
             {
                 tcpClient.Close();
             }
+        }
+
+        /// <summary>
+        /// Длина в байтах первого целого JSON-объекта в буфере или -1, если он ещё не дочитан.
+        /// Байты UTF-8 продолжения (>= 0x80) не совпадают со скобками и кавычками, поэтому
+        /// разбор по байтам безопасен.
+        /// </summary>
+        private static int FindCompleteJsonLength(byte[] data, int length)
+        {
+            int depth = 0;
+            bool inString = false;
+            bool escaped = false;
+            bool started = false;
+
+            for (int i = 0; i < length; i++)
+            {
+                byte b = data[i];
+                if (inString)
+                {
+                    if (escaped) escaped = false;
+                    else if (b == (byte)'\\') escaped = true;
+                    else if (b == (byte)'"') inString = false;
+                    continue;
+                }
+
+                if (b == (byte)'"') inString = true;
+                else if (b == (byte)'{' || b == (byte)'[') { depth++; started = true; }
+                else if (b == (byte)'}' || b == (byte)']')
+                {
+                    depth--;
+                    if (started && depth == 0) return i + 1;
+                }
+            }
+
+            return -1;
         }
 
         private string ProcessJsonRPCRequest(string requestJson)

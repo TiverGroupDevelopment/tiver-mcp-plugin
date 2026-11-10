@@ -1,5 +1,10 @@
 import { RevitClientConnection } from "./SocketClient.js";
 
+// Target Revit instance. Override via env to talk to a second Revit
+// (the plugin picks 8080, 8081, ... depending on which ports are free).
+const REVIT_HOST = process.env.REVIT_HOST || "localhost";
+const REVIT_PORT = Number(process.env.REVIT_PORT) || 8080;
+
 // Mutex to serialize all Revit connections - prevents race conditions
 // when multiple requests are made in parallel
 let connectionMutex: Promise<void> = Promise.resolve();
@@ -20,7 +25,7 @@ export async function withRevitConnection<T>(
   });
   await previousMutex;
 
-  const revitClient = new RevitClientConnection("localhost", 8080);
+  const revitClient = new RevitClientConnection(REVIT_HOST, REVIT_PORT);
 
   try {
     // 连接到Revit客户端

@@ -6,10 +6,18 @@
         <PlatformTarget>x64</PlatformTarget>
         <ImplicitUsings>true</ImplicitUsings>
         <PublishAddinFiles>true</PublishAddinFiles>
-        <Configurations>Debug R20;Debug R21;Debug R22;Debug R23;Debug R24;Debug R25;Debug R26</Configurations>
-        <Configurations>$(Configurations);Release R20;Release R21;Release R22;Release R23;Release R24;Release R25;Release R26</Configurations>
+        <Configurations>Debug R19;Debug R20;Debug R21;Debug R22;Debug R23;Debug R24;Debug R25;Debug R26</Configurations>
+        <Configurations>$(Configurations);Release R19;Release R20;Release R21;Release R22;Release R23;Release R24;Release R25;Release R26</Configurations>
     </PropertyGroup>
 
+    <PropertyGroup Condition="$(Configuration.Contains('R19'))">
+        <RevitVersion>2019</RevitVersion>
+        <TargetFramework>net48</TargetFramework>
+        <!-- RevitMCPSDK has no 2019 build; the 2020 net48 build only uses API present in 2019 -->
+        <RevitMCPSDKVersion>2020.*</RevitMCPSDKVersion>
+        <!-- SDK 2020 depends on RevitAPI 2020 package; force the 2019 API reference -->
+        <NoWarn>$(NoWarn);NU1605</NoWarn>
+    </PropertyGroup>
     <PropertyGroup Condition="$(Configuration.Contains('R20'))">
         <RevitVersion>2020</RevitVersion>
         <TargetFramework>net48</TargetFramework>
@@ -44,6 +52,10 @@
         <DefineConstants>$(DefineConstants);REVIT2022_OR_GREATER;REVIT2023_OR_GREATER;REVIT2024_OR_GREATER;REVIT2025_OR_GREATER</DefineConstants>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(RevitMCPSDKVersion)' == ''">
+        <RevitMCPSDKVersion>$(RevitVersion).*</RevitMCPSDKVersion>
+    </PropertyGroup>
+
     <PropertyGroup>
         <StartAction>Program</StartAction>
         <StartProgram>C:\Program Files\Autodesk\Revit $(RevitVersion)\Revit.exe</StartProgram>
@@ -58,7 +70,7 @@
         <PackageReference Include="Nice3point.Revit.Extensions" Version="$(RevitVersion).*" />
         <PackageReference Include="Nice3point.Revit.Api.RevitAPI" Version="$(RevitVersion).*" />
 		<PackageReference Include="Nice3point.Revit.Api.RevitAPIUI" Version="$(RevitVersion).*" />
-		<PackageReference Include="RevitMCPSDK" Version="$(RevitVersion).*" />
+		<PackageReference Include="RevitMCPSDK" Version="$(RevitMCPSDKVersion)" />
     </ItemGroup>
 
     <ItemGroup>
