@@ -4,7 +4,7 @@ Oct 28, 2026 · @Sem
 
 ## Как устроено
 
-Каждая команда проходит через три слоя, и её имя должно совпадать во всех трёх местах. Пути ниже указаны от `K:\tiver\mcp-servers-for-revit\mcp-servers-for-revit`.
+Каждая команда проходит через три слоя, и её имя должно совпадать во всех трёх местах. Пути ниже указаны от `D:\Repos\tiver-mcp-plugin`.
 
 | Слой | Папка | Что делает |
 | --- | --- | --- |
@@ -71,21 +71,21 @@ public class MyCommand : ExternalEventCommandBase
 
 ### Шаг 5. Сборка
 
-1. Сервер: `npm --prefix "K:/tiver/mcp-servers-for-revit/mcp-servers-for-revit/server" run build`.
+1. Сервер: `npm --prefix "D:/Repos/tiver-mcp-plugin/server" run build`.
 2. Плагин и набор команд: собрать `mcp-servers-for-revit.sln` в Visual Studio. Конфигурации `Release R20`–`R24` для .NET 4.8, `R25`/`R26` для .NET 8. Результат появится в `plugin/bin/AddIn <год> <конфиг>/`.
 3. При ручной установке скопировать DLL и `command.json` в `Commands/RevitMCPCommandSet/` папки плагина.
 
 ### Шаг 6. Подключение клиента к локальной сборке
 
-Сделано: в `K:\tiver\mcp-servers-for-revit\.mcp.json` прописан сервер `revit-local`:
+Сделано: в `D:\Repos\tiver-mcp-plugin\.mcp.json` прописан сервер `revit-local`:
 
 ```json
 { "mcpServers": { "revit-local": { "type": "stdio", "command": "node",
-    "args": ["K:/tiver/mcp-servers-for-revit/mcp-servers-for-revit/server/build/index.js"],
+    "args": ["D:/Repos/tiver-mcp-plugin/server/build/index.js"],
     "env": { "NODE_OPTIONS": "--dns-result-order=ipv4first" } } } }
 ```
 
-Раньше клиент запускал `npx -y mcp-server-for-revit`, то есть опубликованный пакет из npm без новых команд. Старую запись нужно удалить, запустив из `C:\Users\sezav`:
+Раньше клиент запускал `npx -y mcp-server-for-revit`, то есть опубликованный пакет из npm без новых команд. Старую запись нужно удалить, запустив из `C:\Users\alexg`:
 
 ```bash
 claude mcp remove mcp-server-for-revit -s local
@@ -94,7 +94,7 @@ claude mcp remove mcp-server-for-revit -s local
 ### Шаг 7. Перезапуск и проверка
 
 - [ ] Перезапустить Revit, чтобы загрузились новый плагин и `command.json`.
-- [ ] Открыть новую сессию Claude в `K:\tiver\mcp-servers-for-revit` и подтвердить доверие к `.mcp.json`.
+- [ ] Открыть новую сессию Claude в `D:\Repos\tiver-mcp-plugin` и подтвердить доверие к `.mcp.json`.
 - [ ] Проверить, что новый инструмент есть в списке (в терминале `claude` — команда `/mcp`).
 - [ ] Вызвать инструмент на тестовой модели.
 
@@ -106,7 +106,7 @@ claude mcp remove mcp-server-for-revit -s local
 
 | Проблема | Причина | Решение |
 | --- | --- | --- |
-| Не загружаются `store_project_data`, `store_room_data`, `query_stored_data` | `better-sqlite3` 12.8 требует Node 20+, установлен Node 18.0.0 | Обновить Node до LTS (22.x), затем `npm --prefix "K:/tiver/mcp-servers-for-revit/mcp-servers-for-revit/server" rebuild better-sqlite3` |
+| Не загружаются `store_project_data`, `store_room_data`, `query_stored_data` | `better-sqlite3` 12.8 требует Node 20+, установлен Node 18.0.0 | Обновить Node до LTS (22.x), затем `npm --prefix "D:/Repos/tiver-mcp-plugin/server" rebuild better-sqlite3` |
 | Предупреждения «не найдена функция регистрации» при запуске | Пустые файлы `use_module.ts`, `search_modules.ts`, `modify_element.ts` в `server/src/tools` | Удалить или дописать; на работу не влияет |
 | После правок в `server/src` новый инструмент не появился | Клиент запускает `server/build`, а не исходники | `npm run build` и новая сессия Claude |
 
@@ -118,10 +118,10 @@ claude mcp remove mcp-server-for-revit -s local
 
 | Изменение | Нужен ли откат |
 | --- | --- |
-| Создан `K:\tiver\mcp-servers-for-revit\.mcp.json` с сервером `revit-local` | Да |
+| Создан `D:\Repos\tiver-mcp-plugin\.mcp.json` с сервером `revit-local` | Да |
 | Пересобран `server/build` из тех же исходников | Нет |
 | Попытка пересобрать `better-sqlite3`, завершилась ошибкой, рабочее состояние не изменилось | Нет |
-| Запись `mcp-server-for-revit` в `C:\Users\sezav\.claude.json` | Не трогалась; вернуть, только если вы её удалили |
+| Запись `mcp-server-for-revit` в `C:\Users\alexg\.claude.json` | Не трогалась; вернуть, только если вы её удалили |
 
 ### Как откатить
 
@@ -130,12 +130,12 @@ claude mcp remove mcp-server-for-revit -s local
    ```bash
    claude mcp remove revit-local -s project
    ```
-2. Если доверие к `.mcp.json` уже подтверждено, сбросить его из `K:\tiver\mcp-servers-for-revit`:
+2. Если доверие к `.mcp.json` уже подтверждено, сбросить его из `D:\Repos\tiver-mcp-plugin`:
 
    ```bash
    claude mcp reset-project-choices
    ```
-3. Если старая запись через npx уже удалена, вернуть её из `C:\Users\sezav`. Исходные параметры: `"type": "stdio"`, `"command": "cmd"`, `"args": ["/c", "npx", "-y", "mcp-server-for-revit"]`.
+3. Если старая запись через npx уже удалена, вернуть её из `C:\Users\alexg`. Исходные параметры: `"type": "stdio"`, `"command": "cmd"`, `"args": ["/c", "npx", "-y", "mcp-server-for-revit"]`.
 
    ```bash
    claude mcp add mcp-server-for-revit -s local -- cmd /c npx -y mcp-server-for-revit

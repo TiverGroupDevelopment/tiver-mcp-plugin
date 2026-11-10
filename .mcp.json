@@ -4,7 +4,7 @@
       "type": "stdio",
       "command": "node",
       "args": [
-        "K:/tiver/mcp-servers-for-revit/mcp-servers-for-revit/server/build/index.js"
+        "D:/Repos/tiver-mcp-plugin/server/build/index.js"
       ],
       "env": {"NODE_OPTIONS": "--dns-result-order=ipv4first"}
     }

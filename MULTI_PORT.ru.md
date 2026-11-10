@@ -79,13 +79,13 @@ dotnet build commandset -c "Debug R20"
     "revit-local": {
       "type": "stdio",
       "command": "node",
-      "args": ["K:/tiver/mcp-servers-for-revit/mcp-servers-for-revit/server/build/index.js"],
+      "args": ["D:/Repos/tiver-mcp-plugin/server/build/index.js"],
       "env": { "NODE_OPTIONS": "--dns-result-order=ipv4first", "REVIT_PORT": "8080" }
     },
     "revit-local-2": {
       "type": "stdio",
       "command": "node",
-      "args": ["K:/tiver/mcp-servers-for-revit/mcp-servers-for-revit/server/build/index.js"],
+      "args": ["D:/Repos/tiver-mcp-plugin/server/build/index.js"],
       "env": { "NODE_OPTIONS": "--dns-result-order=ipv4first", "REVIT_PORT": "8081" }
     }
   }
