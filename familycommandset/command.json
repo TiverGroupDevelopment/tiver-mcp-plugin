@@ -207,6 +207,11 @@
       "commandName": "test_family_flex",
       "description": "Try parameter value sets and report failures, without changing the family",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "create_family_array",
+      "description": "Create a linear or radial array in a family",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     }
   ]
 }
