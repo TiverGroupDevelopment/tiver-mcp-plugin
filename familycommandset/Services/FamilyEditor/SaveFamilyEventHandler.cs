@@ -2,7 +2,6 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Newtonsoft.Json.Linq;
 using RevitMCPFamilyCommandSet.Utils.FamilyEditor;
-using System.IO;
 
 namespace RevitMCPFamilyCommandSet.Services.FamilyEditor;
 
@@ -18,9 +17,19 @@ public class SaveFamilyEventHandler : FamilyEditorEventHandlerBase
         return Read(app, args, session =>
         {
             var doc = session.Document;
+            var pinned = session.IsPinned ? FamilySessionRegistry.Current : null;
 
             if (path == null)
             {
+                // После контрольной точки документ лежит во временной папке: сохраняем в его настоящий файл.
+                if (pinned != null && pinned.IsRelocated)
+                {
+                    var original = pinned.OriginalPath
+                                   ?? throw new ArgumentException("Семейство ещё не сохранялось в свой файл: укажите path (*.rfa)");
+                    doc.SaveAs(original, new SaveAsOptions { OverwriteExistingFile = true });
+                    return new { path = original, mode = "save" };
+                }
+
                 if (session.IsDetached || string.IsNullOrEmpty(doc.PathName))
                 {
                     throw new ArgumentException("Документ ещё не сохранён на диск: укажите path (*.rfa)");
@@ -30,25 +39,9 @@ public class SaveFamilyEventHandler : FamilyEditorEventHandlerBase
                 return new { path = doc.PathName, mode = "save" };
             }
 
-            if (!path.EndsWith(".rfa", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("path должен оканчиваться на .rfa");
-            }
-
-            var fullPath = Path.GetFullPath(path);
-            var directory = Path.GetDirectoryName(fullPath);
-            if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
-            {
-                throw new ArgumentException($"Папка '{directory}' не существует");
-            }
-
-            var existed = File.Exists(fullPath);
-            if (existed && !overwrite)
-            {
-                throw new InvalidOperationException($"Файл '{fullPath}' уже существует. Для замены передайте overwrite: true");
-            }
-
+            var fullPath = FamilyFiles.ValidateSavePath(path, overwrite, out var existed);
             doc.SaveAs(fullPath, new SaveAsOptions { OverwriteExistingFile = overwrite });
+            if (pinned != null) pinned.OriginalPath = fullPath;
             return new { path = fullPath, mode = "saveAs", overwritten = existed };
         });
     }

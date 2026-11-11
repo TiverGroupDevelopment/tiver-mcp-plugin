@@ -62,6 +62,26 @@
       "commandName": "save_family",
       "description": "Save the family document or save it as .rfa",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "list_family_templates",
+      "description": "List family templates (.rft) from the Revit template folder",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "new_family",
+      "description": "Create a family from a template and pin it as the editing session",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "open_family",
+      "description": "Open a family (.rfa, project family or active document) as the editing session",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "close_family",
+      "description": "Finish the family session: save, load into project, close",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     }
   ]
 }
