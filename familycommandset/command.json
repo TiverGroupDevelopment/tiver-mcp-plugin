@@ -152,6 +152,11 @@
       "commandName": "set_family_element_graphics",
       "description": "Set subcategory and visibility of family elements",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "create_family_materials",
+      "description": "Create or update materials in a family",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     }
   ]
 }
