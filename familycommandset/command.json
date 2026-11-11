@@ -127,6 +127,16 @@
       "commandName": "capture_family_view",
       "description": "Render a family view to PNG",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "get_family_properties",
+      "description": "Read family category and family-level properties",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "set_family_properties",
+      "description": "Change family category and family-level properties",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     }
   ]
 }
