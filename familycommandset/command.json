@@ -217,6 +217,16 @@
       "commandName": "purge_family_unused",
       "description": "Delete unused elements from a family (Revit 2024+)",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "checkpoint_family",
+      "description": "Save a restore point of the family session",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "restore_family_checkpoint",
+      "description": "Roll the family session back to a checkpoint",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     }
   ]
 }
