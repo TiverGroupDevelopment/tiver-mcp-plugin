@@ -192,6 +192,16 @@
       "commandName": "update_family_parameters",
       "description": "Rename, retype, make reporting or remove family parameters",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "export_family_type_catalog",
+      "description": "Write a type catalog .txt from family types",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "manage_family_lookup_tables",
+      "description": "List, import, export or remove family lookup tables",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     }
   ]
 }
