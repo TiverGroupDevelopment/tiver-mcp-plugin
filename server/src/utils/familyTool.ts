@@ -72,6 +72,68 @@ export const formFinishFields = {
     .describe("For voids: cut intersecting solid forms (default true)"),
 };
 
+export const vector3 = z
+  .union([
+    z.tuple([z.number(), z.number(), z.number()]),
+    z.object({ x: z.number(), y: z.number(), z: z.number() }),
+  ])
+  .describe("[x, y, z] or {x, y, z}");
+
+export const referenceSpec = z
+  .union([
+    z.string().describe("Reference plane name"),
+    z.object({ referencePlane: z.string() }),
+    z.object({ referencePlaneId: z.number().int() }),
+    z.object({ level: z.string().describe("Level name in the family") }),
+    z.object({
+      elementId: z.number().int().describe("Form id"),
+      faceIndex: z
+        .number()
+        .int()
+        .describe("Planar face index from get_family_geometry with detail: true (faces[].index)"),
+    }),
+  ])
+  .describe(
+    "A plane to dimension or align to: reference plane name, {referencePlane}, {referencePlaneId}, {level} or a planar form face {elementId, faceIndex}."
+  );
+
+export const pathSpec = z
+  .union([
+    z.array(point2d).min(2),
+    z.object({ points: z.array(point2d).min(2), closed: z.boolean().optional() }),
+    z.object({ segments: z.array(segment).min(1) }),
+    z.object({
+      circle: z.object({ center: point2d.optional(), radius: z.number().positive() }),
+    }),
+  ])
+  .describe(
+    "Sweep path in work plane local coordinates (mm): array of points (open polyline), {points, closed}, {segments:[{type,start,end,mid}]} or {circle}."
+  );
+
+export const familyElementVisibility = z
+  .object({
+    coarse: z.boolean().optional(),
+    medium: z.boolean().optional(),
+    fine: z.boolean().optional(),
+    planRcp: z.boolean().optional().describe("Plan / RCP views"),
+    frontBack: z.boolean().optional().describe("Front / back views"),
+    leftRight: z.boolean().optional().describe("Left / right views"),
+    topBottom: z.boolean().optional().describe("Top / bottom views (symbolic lines)"),
+    onlyWhenCut: z.boolean().optional().describe("Show only when the instance is cut"),
+  })
+  .describe("Family Element Visibility Settings; omitted keys keep their current value");
+
+export const colorSpec = z
+  .union([
+    z.tuple([z.number().int(), z.number().int(), z.number().int()]),
+    z.object({ r: z.number().int(), g: z.number().int(), b: z.number().int() }),
+    z.string().describe("#RRGGBB"),
+  ])
+  .describe("RGB color 0-255: [r, g, b], {r, g, b} or #RRGGBB");
+
+export const sessionNote =
+  "Targets the pinned family session if one is open (new_family / open_family), otherwise the active family document or familyName from the active project.";
+
 export function registerFamilyTool(
   server: McpServer,
   name: string,

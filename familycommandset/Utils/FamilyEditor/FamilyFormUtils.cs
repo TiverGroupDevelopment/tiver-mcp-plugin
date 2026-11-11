@@ -70,8 +70,29 @@ public static class FamilyFormUtils
     public static object Describe(Document doc, FamilyManager manager, GenericForm form)
     {
         var box = form.get_BoundingBox(null);
+
+        return new
+        {
+            id = form.Id.GetValue(),
+            kind = form.GetType().Name,
+            isSolid = form.IsSolid,
+            name = form.Name,
+            boundingBoxMm = box == null
+                ? null
+                : new
+                {
+                    min = new[] { Mm(box.Min.X), Mm(box.Min.Y), Mm(box.Min.Z) },
+                    max = new[] { Mm(box.Max.X), Mm(box.Max.Y), Mm(box.Max.Z) }
+                },
+            associableParameters = AssociableParameters(manager, form)
+        };
+    }
+
+    /// <summary>Параметры элемента (формы, вложенного экземпляра, коннектора), которые можно связать с параметрами семейства.</summary>
+    public static List<object> AssociableParameters(FamilyManager manager, Element element)
+    {
         var parameters = new List<object>();
-        foreach (Parameter parameter in form.Parameters)
+        foreach (Parameter parameter in element.Parameters)
         {
             bool associable;
             try
@@ -95,20 +116,19 @@ public static class FamilyFormUtils
             });
         }
 
+        return parameters;
+    }
+
+    /// <summary>Описание любого элемента семейства: форма — подробно, остальное — тип, имя и связываемые параметры.</summary>
+    public static object DescribeElement(Document doc, FamilyManager manager, Element element)
+    {
+        if (element is GenericForm form) return Describe(doc, manager, form);
         return new
         {
-            id = form.Id.GetValue(),
-            kind = form.GetType().Name,
-            isSolid = form.IsSolid,
-            name = form.Name,
-            boundingBoxMm = box == null
-                ? null
-                : new
-                {
-                    min = new[] { Mm(box.Min.X), Mm(box.Min.Y), Mm(box.Min.Z) },
-                    max = new[] { Mm(box.Max.X), Mm(box.Max.Y), Mm(box.Max.Z) }
-                },
-            associableParameters = parameters
+            id = element.Id.GetValue(),
+            kind = element.GetType().Name,
+            name = element.Name,
+            associableParameters = AssociableParameters(manager, element)
         };
     }
 

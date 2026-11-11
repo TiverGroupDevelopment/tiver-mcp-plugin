@@ -51,4 +51,33 @@ public static class JsonArgs
     {
         return Required(args, key) as JArray ?? throw new ArgumentException($"Параметр '{key}' должен быть массивом");
     }
+
+    /// <summary>Три числа из [x, y, z] или {x, y, z} без пересчёта единиц.</summary>
+    public static Autodesk.Revit.DB.XYZ Vector(JToken token, string what)
+    {
+        if (token is JArray array && array.Count >= 3)
+        {
+            return new Autodesk.Revit.DB.XYZ(array[0].Value<double>(), array[1].Value<double>(), array[2].Value<double>());
+        }
+
+        if (token is JObject obj && obj["x"] != null && obj["y"] != null && obj["z"] != null)
+        {
+            return new Autodesk.Revit.DB.XYZ(obj["x"].Value<double>(), obj["y"].Value<double>(), obj["z"].Value<double>());
+        }
+
+        throw new ArgumentException($"{what} должен быть [x, y, z] или {{\"x\":..,\"y\":..,\"z\":..}}, получено: {token}");
+    }
+
+    /// <summary>Точка в мм, пересчитанная во внутренние футы.</summary>
+    public static Autodesk.Revit.DB.XYZ PointMm(JToken token, string what)
+    {
+        return Vector(token, what) / 304.8;
+    }
+
+    public static List<long> Ids(JObject args, string key)
+    {
+        var ids = RequiredArray(args, key).Select(t => t.Value<long>()).Distinct().ToList();
+        if (ids.Count == 0) throw new ArgumentException($"'{key}' пуст");
+        return ids;
+    }
 }

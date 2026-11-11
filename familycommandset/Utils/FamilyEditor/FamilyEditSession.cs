@@ -8,42 +8,65 @@ public sealed class FamilyEditSession : IDisposable
     private readonly Document _projectDocument;
     private bool _disposed;
 
-    private FamilyEditSession(Document familyDocument, Document projectDocument, string familyName)
+    private FamilyEditSession(Document familyDocument, Document projectDocument, string familyName, bool isPinned)
     {
         Document = familyDocument;
         _projectDocument = projectDocument;
         FamilyName = familyName;
+        IsPinned = isPinned;
     }
 
     public Document Document { get; }
 
     public string FamilyName { get; }
 
+    /// <summary>Документ принадлежит закреплённой сессии (new_family / open_family) и живёт до close_family.</summary>
+    public bool IsPinned { get; }
+
+    /// <summary>Временный документ из EditFamily: после правки загружается в проект и закрывается.</summary>
     public bool IsDetached => _projectDocument != null;
 
     public static FamilyEditSession Open(UIApplication app, string familyName)
     {
+        var pinned = FamilySessionRegistry.Current;
+        if (pinned != null)
+        {
+            if (familyName != null && !string.Equals(pinned.FamilyName, familyName, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    $"Открыта сессия семейства '{pinned.FamilyName}', а запрошено '{familyName}'. Вызовите close_family или не передавайте familyName.");
+            }
+
+            return new FamilyEditSession(pinned.Document, null, pinned.FamilyName, true);
+        }
+
         var active = app.ActiveUIDocument?.Document
-                     ?? throw new InvalidOperationException("В Revit нет активного документа");
+                     ?? throw new InvalidOperationException("В Revit нет активного документа. Создайте семейство через new_family или откройте через open_family.");
 
         if (active.IsFamilyDocument)
         {
-            var title = StripExtension(active.Title);
+            var title = FamilySessionRegistry.StripExtension(active.Title);
             if (familyName != null && !string.Equals(title, familyName, StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException(
                     $"Активен документ семейства '{title}', а запрошено '{familyName}'. Активируйте проект или нужное семейство либо не передавайте familyName.");
             }
 
-            return new FamilyEditSession(active, null, title);
+            return new FamilyEditSession(active, null, title, false);
         }
 
         if (familyName == null)
         {
-            throw new ArgumentException("Активен документ проекта: укажите familyName семейства, загруженного в проект");
+            throw new ArgumentException("Активен документ проекта: укажите familyName семейства, загруженного в проект, либо откройте сессию через open_family / new_family");
         }
 
-        var family = new FilteredElementCollector(active)
+        var family = FindLoadedFamily(active, familyName);
+        return new FamilyEditSession(active.EditFamily(family), active, family.Name, false);
+    }
+
+    public static Family FindLoadedFamily(Document project, string familyName)
+    {
+        var family = new FilteredElementCollector(project)
                          .OfClass(typeof(Family))
                          .Cast<Family>()
                          .FirstOrDefault(f => string.Equals(f.Name, familyName, StringComparison.OrdinalIgnoreCase))
@@ -59,7 +82,7 @@ public sealed class FamilyEditSession : IDisposable
             throw new InvalidOperationException($"Семейство '{family.Name}' нельзя редактировать");
         }
 
-        return new FamilyEditSession(active.EditFamily(family), active, family.Name);
+        return family;
     }
 
     public void LoadIntoProject(bool overwriteParameterValues)
@@ -79,34 +102,6 @@ public sealed class FamilyEditSession : IDisposable
         }
         catch (Exception)
         {
-        }
-    }
-
-    private static string StripExtension(string title)
-    {
-        return title.EndsWith(".rfa", StringComparison.OrdinalIgnoreCase) ? title.Substring(0, title.Length - 4) : title;
-    }
-
-    private sealed class FamilyLoadOptions : IFamilyLoadOptions
-    {
-        private readonly bool _overwriteParameterValues;
-
-        public FamilyLoadOptions(bool overwriteParameterValues)
-        {
-            _overwriteParameterValues = overwriteParameterValues;
-        }
-
-        public bool OnFamilyFound(bool familyInUse, out bool overwriteParameterValues)
-        {
-            overwriteParameterValues = _overwriteParameterValues;
-            return true;
-        }
-
-        public bool OnSharedFamilyFound(Family sharedFamily, bool familyInUse, out FamilySource source, out bool overwriteParameterValues)
-        {
-            source = FamilySource.Family;
-            overwriteParameterValues = _overwriteParameterValues;
-            return true;
         }
     }
 }

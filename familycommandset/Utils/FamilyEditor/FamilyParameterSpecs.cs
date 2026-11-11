@@ -62,6 +62,12 @@ public static class FamilyParameterSpecs
 #endif
     }
 
+    /// <summary>Добавляет общий параметр из файла общих параметров.</summary>
+    public static FamilyParameter AddShared(FamilyManager manager, ExternalDefinition definition, string group, bool isInstance)
+    {
+        return manager.AddParameter(definition, ResolveGroup(group), isInstance);
+    }
+
     public static FamilyValueKind Classify(FamilyParameter parameter)
     {
 #if REVIT2022_OR_GREATER

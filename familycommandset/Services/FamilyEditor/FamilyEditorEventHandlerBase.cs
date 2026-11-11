@@ -64,7 +64,7 @@ public abstract class FamilyEditorEventHandlerBase : IExternalEventHandler, IWai
     protected static object Read(UIApplication app, JObject args, Func<FamilyEditSession, object> reader)
     {
         using var session = FamilyEditSession.Open(app, JsonArgs.OptionalString(args, "familyName"));
-        return new { family = session.FamilyName, result = reader(session) };
+        return new { family = session.FamilyName, pinnedSession = session.IsPinned, result = reader(session) };
     }
 
     protected object Edit(UIApplication app, JObject args, string transactionName, Func<Document, object> action)
@@ -95,11 +95,19 @@ public abstract class FamilyEditorEventHandlerBase : IExternalEventHandler, IWai
         return new
         {
             family = session.FamilyName,
+            pinnedSession = session.IsPinned,
             loadedIntoProject = session.IsDetached,
             warnings = _failures.Warnings,
             result
         };
     }
+
+    /// <summary>Предупреждения Revit, собранные за время команды (для обработчиков без Edit).</summary>
+    protected IReadOnlyList<string> Warnings => _failures.Warnings;
+
+    protected bool HasFailureErrors => _failures.HasErrors;
+
+    protected string FailureErrors => DescribeErrors();
 
     private string DescribeErrors()
     {

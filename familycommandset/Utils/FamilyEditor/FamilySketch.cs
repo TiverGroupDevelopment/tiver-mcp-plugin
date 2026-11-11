@@ -18,6 +18,24 @@ public sealed class FamilyWorkPlane
         Description = description;
     }
 
+    private FamilyWorkPlane(string description)
+    {
+        Origin = XYZ.Zero;
+        XAxis = XYZ.BasisX;
+        YAxis = XYZ.BasisY;
+        Normal = XYZ.BasisZ;
+        Description = description;
+    }
+
+    /// <summary>
+    /// Локальная система профиля sweep / swept blend: контур задаётся в плоскости XY вокруг начала координат,
+    /// Revit сам переносит его на траекторию. Эскизной плоскости у такого профиля нет.
+    /// </summary>
+    public static FamilyWorkPlane ProfileLocal()
+    {
+        return new FamilyWorkPlane("profile-local");
+    }
+
     public SketchPlane SketchPlane { get; }
     public XYZ Origin { get; }
     public XYZ XAxis { get; }
@@ -97,7 +115,7 @@ public sealed class FamilyWorkPlane
         return new
         {
             source = Description,
-            sketchPlaneId = SketchPlane.Id.GetValue(),
+            sketchPlaneId = SketchPlane?.Id.GetValue(),
             normal = new[] { Math.Round(Normal.X, 6), Math.Round(Normal.Y, 6), Math.Round(Normal.Z, 6) }
         };
     }
@@ -177,6 +195,71 @@ public static class FamilyProfileBuilder
         return curves;
     }
 
+    /// <summary>
+    /// Траектория sweep: незамкнутая или замкнутая цепочка кривых в рабочей плоскости.
+    /// Форматы: массив точек, {points, closed}, {segments}, {circle}.
+    /// </summary>
+    public static CurveArray BuildPath(Document doc, FamilyWorkPlane plane, JToken path)
+    {
+        var tolerance = doc.Application.ShortCurveTolerance;
+        var curves = new CurveArray();
+
+        if (path is JArray bare)
+        {
+            AppendOpenPolyline(curves, bare.Select(p => plane.ToWorld(p)).ToList(), false, tolerance);
+            return curves;
+        }
+
+        if (!(path is JObject obj))
+        {
+            throw new ArgumentException($"Некорректная траектория: {path}");
+        }
+
+        if (obj["points"] is JArray points)
+        {
+            var closed = obj["closed"]?.Value<bool?>() ?? false;
+            AppendOpenPolyline(curves, points.Select(p => plane.ToWorld(p)).ToList(), closed, tolerance);
+        }
+        else if (obj["segments"] is JArray segments)
+        {
+            AppendSegments(curves, plane, segments, 0, tolerance, false);
+        }
+        else if (obj["circle"] is JObject)
+        {
+            return BuildLoop(doc, plane, obj);
+        }
+        else
+        {
+            throw new ArgumentException("Траектория должна содержать points, segments или circle");
+        }
+
+        return curves;
+    }
+
+    private static void AppendOpenPolyline(CurveArray curves, List<XYZ> points, bool closed, double tolerance)
+    {
+        var cleaned = new List<XYZ>();
+        foreach (var point in points)
+        {
+            if (cleaned.Count == 0 || cleaned[cleaned.Count - 1].DistanceTo(point) > tolerance) cleaned.Add(point);
+        }
+
+        if (cleaned.Count < 2)
+        {
+            throw new ArgumentException("Траектория из точек должна содержать минимум 2 различные точки");
+        }
+
+        for (var i = 0; i < cleaned.Count - 1; i++)
+        {
+            curves.Append(Line.CreateBound(cleaned[i], cleaned[i + 1]));
+        }
+
+        if (closed && cleaned.Count > 2 && cleaned[0].DistanceTo(cleaned[cleaned.Count - 1]) > tolerance)
+        {
+            curves.Append(Line.CreateBound(cleaned[cleaned.Count - 1], cleaned[0]));
+        }
+    }
+
     private static double Coordinate(JToken point, string key, int index)
     {
         if (point is JArray array && array.Count > index) return array[index].Value<double>();
@@ -207,7 +290,7 @@ public static class FamilyProfileBuilder
         }
     }
 
-    private static void AppendSegments(CurveArray curves, FamilyWorkPlane plane, JArray segments, double normalOffsetMm, double tolerance)
+    private static void AppendSegments(CurveArray curves, FamilyWorkPlane plane, JArray segments, double normalOffsetMm, double tolerance, bool mustClose = true)
     {
         XYZ firstStart = null;
         XYZ previousEnd = null;
@@ -241,7 +324,12 @@ public static class FamilyProfileBuilder
             previousEnd = end;
         }
 
-        if (firstStart == null || previousEnd.DistanceTo(firstStart) > tolerance)
+        if (firstStart == null)
+        {
+            throw new ArgumentException("segments пуст");
+        }
+
+        if (mustClose && previousEnd.DistanceTo(firstStart) > tolerance)
         {
             throw new ArgumentException("Контур из сегментов не замкнут");
         }
