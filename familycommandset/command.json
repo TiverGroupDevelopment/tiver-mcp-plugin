@@ -97,6 +97,21 @@
       "commandName": "align_family_elements",
       "description": "Lock form faces to reference planes or levels",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "modify_family_form",
+      "description": "Change extents, angles, solid/void, visibility or material of a family form",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "delete_family_elements",
+      "description": "Delete forms, reference planes, dimensions or lines from a family",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "transform_family_elements",
+      "description": "Move, copy, rotate or mirror family elements",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     }
   ]
 }
