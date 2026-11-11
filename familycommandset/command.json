@@ -157,6 +157,21 @@
       "commandName": "create_family_materials",
       "description": "Create or update materials in a family",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "load_nested_family",
+      "description": "Load an .rfa into the family as a nested family",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "place_family_instance",
+      "description": "Place a nested family instance in the family",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "load_family_into_project",
+      "description": "Load the edited family into an open project",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     }
   ]
 }

@@ -17,12 +17,14 @@ public class AssociateFamilyParametersEventHandler : FamilyEditorEventHandlerBas
         return Edit(app, args, "MCP: associate family parameters", doc =>
         {
             var manager = doc.FamilyManager;
-            var touched = new Dictionary<long, GenericForm>();
+            var touched = new Dictionary<long, Element>();
 
             foreach (var association in associations)
             {
                 var elementId = JsonArgs.Required(association, "elementId").Value<long>();
-                var form = FamilyFormUtils.GetForm(doc, elementId);
+                // Формы, вложенные экземпляры, коннекторы, массивы — всё, у чего есть связываемые параметры.
+                var form = doc.GetElement(FamilyEditorIds.FromNumber(elementId))
+                           ?? throw new ArgumentException($"Элемент {elementId} не найден");
                 var elementParameterName = JsonArgs.RequiredString(association, "elementParameter");
                 var elementParameter = FindElementParameter(form, elementParameterName);
 
@@ -38,7 +40,7 @@ public class AssociateFamilyParametersEventHandler : FamilyEditorEventHandlerBas
             }
 
             doc.Regenerate();
-            return touched.Values.Select(f => FamilyFormUtils.Describe(doc, manager, f)).ToList();
+            return touched.Values.Select(f => FamilyFormUtils.DescribeElement(doc, manager, f)).ToList();
         });
     }
 
@@ -51,6 +53,6 @@ public class AssociateFamilyParametersEventHandler : FamilyEditorEventHandlerBas
         }
 
         return element.LookupParameter(name)
-               ?? throw new ArgumentException($"У элемента {element.Id} нет параметра '{name}'. Список доступных — в get_family_geometry → associableParameters");
+               ?? throw new ArgumentException($"У элемента {element.Id} нет параметра '{name}'. Список доступных — associableParameters в ответе get_family_geometry или команды, создавшей элемент");
     }
 }

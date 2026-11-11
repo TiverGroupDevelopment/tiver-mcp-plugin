@@ -10,7 +10,7 @@ export function registerAssociateFamilyParametersTool(server: McpServer) {
   registerFamilyTool(
     server,
     "associate_family_parameters",
-    "Associate parameters of forms (e.g. EXTRUSION_END_PARAM, MATERIAL_ID_PARAM, IS_VISIBLE_PARAM) with family parameters, making geometry parametric. Get ids and associable parameters from get_family_geometry. familyParameter omitted/null removes the association.",
+    "Associate element parameters with family parameters, making the family parametric: form parameters (e.g. EXTRUSION_END_PARAM, MATERIAL_ID_PARAM, IS_VISIBLE_PARAM), parameters of nested family instances, and connector sizes. Get ids and associable parameters from get_family_geometry, or from the associableParameters returned by place_family_instance and create_family_connector. familyParameter omitted/null removes the association.",
     {
       familyName: familyNameField,
       associations: z
