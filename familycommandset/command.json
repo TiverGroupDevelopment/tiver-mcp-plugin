@@ -112,6 +112,16 @@
       "commandName": "transform_family_elements",
       "description": "Move, copy, rotate or mirror family elements",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "create_family_sweep",
+      "description": "Create solid or void sweep in a family",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "create_family_swept_blend",
+      "description": "Create solid or void swept blend in a family",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     }
   ]
 }
