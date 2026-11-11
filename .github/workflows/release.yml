@@ -40,9 +40,9 @@ jobs:
           npm run build
 
       # ---------------------------------------------------------------
-      # Build Plugin + CommandSet via combined solution
-      # The commandset's DeployCommandSet target automatically copies
-      # its output into the plugin's AddIn layout.
+      # Build Plugin + both command sets via combined solution
+      # DeployCommandSet (commandset/) and DeployFamilyCommandSet
+      # (familycommandset/) copy their output into the plugin's AddIn layout.
       # ---------------------------------------------------------------
       - name: Build Revit 2020 (.NET Framework 4.8)
         run: msbuild mcp-servers-for-revit.sln -p:Configuration="Release R20" -restore
@@ -68,7 +68,7 @@ jobs:
       # ---------------------------------------------------------------
       # Create Release Assets
       # The AddIn output already contains the complete deployable layout
-      # (plugin + commandset) thanks to the DeployCommandSet build target.
+      # (plugin + both command sets) thanks to the Deploy*CommandSet targets.
       # ---------------------------------------------------------------
       - name: Create release assets
         run: |

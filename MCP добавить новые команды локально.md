@@ -11,6 +11,9 @@ Oct 28, 2026 · @Sem
 | MCP-сервер (TypeScript) | `server/` | Объявляет инструмент для ИИ и пересылает вызов в Revit через `sendCommand` |
 | Плагин Revit | `plugin/` | Читает `command.json`, находит в DLL класс с нужным `CommandName` через рефлексию |
 | Набор команд (C#) | `commandset/` | Выполняет работу через Revit API |
+| Набор команд семейств (C#) | `familycommandset/` | Команды редактора семейств (`*_family_*`), свой `command.json` |
+
+Команды семейств живут в отдельном наборе `RevitMCPFamilyCommandSet`: код в `familycommandset/`, манифест — `familycommandset/command.json`, `assemblyPath` — `RevitMCPFamilyCommandSet.dll`. Новую команду для семейств добавлять туда, остальные — в `commandset/` и корневой `command.json`. Утилиты `JsonArgs`, `FamilyEditorIds`, `WarningCollector` лежат в обоих наборах: ими пользуется топография.
 
 Имя команды должно совпадать в трёх местах: `CommandName` в C#, `commandName` в `command.json` и `sendCommand("…")` в TypeScript. Имя инструмента для ИИ может отличаться: например, `color_elements` вызывает команду `color_splash`.
 
@@ -29,7 +32,7 @@ Oct 28, 2026 · @Sem
 
 ### Шаг 2. Команда (C#)
 
-Файл `commandset/Commands/<Папка>/MyCommand.cs`, образец: `Commands/Test/SayHelloCommand.cs`. Для семейств есть базовый класс `FamilyEditorCommandBase`, для топографии — `TopographyCommandBase`.
+Файл `commandset/Commands/<Папка>/MyCommand.cs`, образец: `Commands/Test/SayHelloCommand.cs`. Для семейств есть базовый класс `FamilyEditorCommandBase` (в `familycommandset/Commands/FamilyEditor/`), для топографии — `TopographyCommandBase`.
 
 ```csharp
 public class MyCommand : ExternalEventCommandBase
@@ -73,7 +76,7 @@ public class MyCommand : ExternalEventCommandBase
 
 1. Сервер: `npm --prefix "D:/Repos/tiver-mcp-plugin/server" run build`.
 2. Плагин и набор команд: собрать `mcp-servers-for-revit.sln` в Visual Studio. Конфигурации `Release R20`–`R24` для .NET 4.8, `R25`/`R26` для .NET 8. Результат появится в `plugin/bin/AddIn <год> <конфиг>/`.
-3. При ручной установке скопировать DLL и `command.json` в `Commands/RevitMCPCommandSet/` папки плагина.
+3. При ручной установке скопировать DLL и `command.json` каждого набора в `Commands/RevitMCPCommandSet/` и `Commands/RevitMCPFamilyCommandSet/` папки плагина, затем в Revit открыть **Settings** и сохранить: реестр команд получит новые пути.
 
 ### Шаг 6. Подключение клиента к локальной сборке
 

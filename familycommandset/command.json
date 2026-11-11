@@ -1,0 +1,67 @@
+{
+  "name": "RevitMCPFamilyCommandSet",
+  "description": "Family editor commands: create and edit Revit families (.rfa)",
+  "developer": {
+    "name": "mcp-servers-for-revit",
+    "email": "",
+    "website": "",
+    "organization": "mcp-servers-for-revit"
+  },
+  "commands": [
+    {
+      "commandName": "get_family_parameters",
+      "description": "Read family parameters, formulas and per-type values",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "add_family_parameters",
+      "description": "Add family parameters (batch) with optional values and formulas",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "set_family_parameter_values",
+      "description": "Set family parameter values for current, listed or all types",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "set_family_parameter_formulas",
+      "description": "Set or clear family parameter formulas",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "add_family_type",
+      "description": "Create a family type, optionally copied from another",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "get_family_geometry",
+      "description": "List family forms, reference planes, levels and materials",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "create_family_extrusion",
+      "description": "Create solid or void extrusion in a family",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "create_family_blend",
+      "description": "Create solid or void blend in a family",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "create_family_revolution",
+      "description": "Create solid or void revolution in a family",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "associate_family_parameters",
+      "description": "Associate form parameters with family parameters",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "save_family",
+      "description": "Save the family document or save it as .rfa",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    }
+  ]
+}

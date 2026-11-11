@@ -48,10 +48,15 @@ The **MCP Server** (TypeScript) translates tool calls from AI clients into WebSo
        ├── RevitMCPPlugin.dll
        ├── ...
        └── Commands/
-           └── RevitMCPCommandSet/
+           ├── RevitMCPCommandSet/
+           │   ├── command.json
+           │   └── 2025/
+           │       ├── RevitMCPCommandSet.dll
+           │       └── ...
+           └── RevitMCPFamilyCommandSet/
                ├── command.json
                └── 2025/
-                   ├── RevitMCPCommandSet.dll
+                   ├── RevitMCPFamilyCommandSet.dll
                    └── ...
    ```
 
@@ -102,12 +107,21 @@ If using a release ZIP, the plugin is already included. For manual installation:
 
 ## Command Set Setup
 
-If using a release ZIP, the command set is pre-installed inside the plugin. For manual installation:
+There are two command sets:
 
-1. Build the command set from `commandset/` (see [Development](#development))
-2. Inside the plugin's installation directory, create `Commands/RevitMCPCommandSet/<year>/`
+| Command set | Source | Manifest | Commands |
+|---|---|---|---|
+| `RevitMCPCommandSet` | `commandset/` | `command.json` (repo root) | Project modelling, data, topography, dynamic code |
+| `RevitMCPFamilyCommandSet` | `familycommandset/` | `familycommandset/command.json` | Family editor: `*_family_*` tools |
+
+If using a release ZIP, both are pre-installed inside the plugin. For manual installation, for each set:
+
+1. Build it (see [Development](#development))
+2. Inside the plugin's installation directory, create `Commands/<command set>/<year>/`
 3. Copy the built DLLs into that folder
-4. Copy `command.json` (from repo root) into `Commands/RevitMCPCommandSet/`
+4. Copy its `command.json` into `Commands/<command set>/`
+
+Then open **Settings** in Revit and save, so the command registry picks up the new paths.
 
 ## Supported Tools
 
@@ -246,8 +260,9 @@ Building the solution automatically assembles the complete deployable layout in 
 
 ```
 mcp-servers-for-revit/
-├── mcp-servers-for-revit.sln    # Combined solution (plugin + commandset + tests)
-├── command.json     # Command set manifest
+├── mcp-servers-for-revit.sln    # Combined solution (plugin + command sets + tests)
+├── command.json     # Main command set manifest
+├── familycommandset/ # Family editor command set (C#) with its own command.json
 ├── server/          # MCP server (TypeScript) - tools exposed to AI clients
 ├── plugin/          # Revit add-in (C#) - WebSocket bridge inside Revit
 ├── commandset/      # Command implementations (C#) - Revit API operations
