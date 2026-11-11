@@ -12,6 +12,9 @@ public class GetFamilyGeometryEventHandler : FamilyEditorEventHandlerBase
 
     protected override object Run(UIApplication app, JObject args)
     {
+        var detail = JsonArgs.OptionalBool(args, "detail", false);
+        var onlyIds = JsonArgs.Has(args, "elementIds") ? new HashSet<long>(JsonArgs.Ids(args, "elementIds")) : null;
+
         return Read(app, args, session =>
         {
             var doc = session.Document;
@@ -21,29 +24,22 @@ public class GetFamilyGeometryEventHandler : FamilyEditorEventHandlerBase
                 .WhereElementIsNotElementType()
                 .ToElements()
                 .OfType<GenericForm>()
-                .Select(f => FamilyFormUtils.Describe(doc, manager, f))
+                .Where(f => onlyIds == null || onlyIds.Contains(f.Id.GetValue()))
+                .Select(f => detail
+                    ? FamilyGeometryReader.DescribeDetailed(doc, manager, f)
+                    : FamilyFormUtils.Describe(doc, manager, f))
                 .ToList();
 
             var referencePlanes = new FilteredElementCollector(doc)
                 .OfClass(typeof(ReferencePlane))
                 .Cast<ReferencePlane>()
-                .Select(r =>
-                {
-                    var plane = r.GetPlane();
-                    return new
-                    {
-                        id = r.Id.GetValue(),
-                        name = r.Name,
-                        originMm = new[] { Mm(plane.Origin.X), Mm(plane.Origin.Y), Mm(plane.Origin.Z) },
-                        normal = new[] { Math.Round(plane.Normal.X, 6), Math.Round(plane.Normal.Y, 6), Math.Round(plane.Normal.Z, 6) }
-                    };
-                })
+                .Select(FamilyDocInfo.DescribeReferencePlane)
                 .ToList();
 
             var levels = new FilteredElementCollector(doc)
                 .OfClass(typeof(Level))
                 .Cast<Level>()
-                .Select(l => new { id = l.Id.GetValue(), name = l.Name, elevationMm = Mm(l.Elevation) })
+                .Select(l => new { id = l.Id.GetValue(), name = l.Name, elevationMm = FamilyDocInfo.Mm(l.Elevation) })
                 .ToList();
 
             var materials = new FilteredElementCollector(doc)
@@ -58,14 +54,11 @@ public class GetFamilyGeometryEventHandler : FamilyEditorEventHandlerBase
                 category = doc.OwnerFamily?.FamilyCategory?.Name,
                 forms,
                 referencePlanes,
+                constraints = FamilyConstraints.DescribeAll(doc),
                 levels,
+                views = FamilyDocInfo.Views(doc).Select(FamilyDocInfo.DescribeView).ToList(),
                 materials
             };
         });
-    }
-
-    private static double Mm(double feet)
-    {
-        return Math.Round(feet * 304.8, 3);
     }
 }

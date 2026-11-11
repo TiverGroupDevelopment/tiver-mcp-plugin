@@ -122,6 +122,11 @@
       "commandName": "create_family_swept_blend",
       "description": "Create solid or void swept blend in a family",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "capture_family_view",
+      "description": "Render a family view to PNG",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     }
   ]
 }
