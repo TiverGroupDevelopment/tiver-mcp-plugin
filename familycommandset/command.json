@@ -212,6 +212,11 @@
       "commandName": "create_family_array",
       "description": "Create a linear or radial array in a family",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "purge_family_unused",
+      "description": "Delete unused elements from a family (Revit 2024+)",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     }
   ]
 }
