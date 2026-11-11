@@ -82,6 +82,21 @@
       "commandName": "close_family",
       "description": "Finish the family session: save, load into project, close",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "create_family_reference_planes",
+      "description": "Create named reference planes in a family",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "create_family_dimensions",
+      "description": "Create dimensions in a family, optionally labelled with a family parameter",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "align_family_elements",
+      "description": "Lock form faces to reference planes or levels",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     }
   ]
 }
