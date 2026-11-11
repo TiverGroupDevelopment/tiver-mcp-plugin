@@ -182,6 +182,16 @@
       "commandName": "create_family_connector",
       "description": "Add an MEP connector on a form face",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "add_family_shared_parameters",
+      "description": "Add shared parameters to a family",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "update_family_parameters",
+      "description": "Rename, retype, make reporting or remove family parameters",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     }
   ]
 }
