@@ -137,6 +137,21 @@
       "commandName": "set_family_properties",
       "description": "Change family category and family-level properties",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "create_family_lines",
+      "description": "Draw model or symbolic lines in a family",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "create_family_subcategories",
+      "description": "Create or update subcategories of the family category",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "set_family_element_graphics",
+      "description": "Set subcategory and visibility of family elements",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     }
   ]
 }
