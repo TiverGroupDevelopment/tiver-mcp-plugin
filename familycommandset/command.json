@@ -172,6 +172,16 @@
       "commandName": "load_family_into_project",
       "description": "Load the edited family into an open project",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "create_family_opening",
+      "description": "Cut an opening in the host of a hosted family",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "create_family_connector",
+      "description": "Add an MEP connector on a form face",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     }
   ]
 }
