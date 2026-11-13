@@ -32,7 +32,9 @@
 
 
 [Оригинальная инструкция](https://github.com/mcp-servers-for-revit/revit-mcp-plugin)
+
 Полезные сслылки:
+
 тоже самое но через [python](https://github.com/mcp-servers-for-revit/mcp-server-for-revit-python)
 https://revitbeh.blogspot.com/2026/06/ai-revit.html
 https://dzen.ru/a/aX-Zf2D6OFk538Xx
