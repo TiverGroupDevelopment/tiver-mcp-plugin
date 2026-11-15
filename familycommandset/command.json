@@ -244,6 +244,11 @@
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     },
     {
+      "commandName": "create_family_model_text",
+      "description": "Create 3D model text in a family",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
       "commandName": "get_family_mass",
       "description": "Compute family mass from form volumes and material densities",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
