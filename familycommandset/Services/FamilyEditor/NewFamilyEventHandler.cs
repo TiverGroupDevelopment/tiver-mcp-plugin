@@ -30,9 +30,24 @@ public class NewFamilyEventHandler : FamilyEditorEventHandlerBase
                   ?? throw new InvalidOperationException($"Revit не создал семейство по шаблону '{template}'");
         try
         {
+            // Многие шаблоны (типовая модель, оборудование) приходят без типоразмеров, и тогда
+            // команды параметров падают. Создаём типоразмер сразу.
+            string createdType = null;
+            if (doc.FamilyManager.Types.Size == 0)
+            {
+                createdType = JsonArgs.OptionalString(args, "typeName")
+                              ?? (fullSavePath != null ? System.IO.Path.GetFileNameWithoutExtension(fullSavePath) : "Тип 1");
+                using (var transaction = new Transaction(doc, "MCP: типоразмер по умолчанию"))
+                {
+                    transaction.Start();
+                    doc.FamilyManager.NewType(createdType);
+                    transaction.Commit();
+                }
+            }
+
             if (fullSavePath != null)
             {
-                doc.SaveAs(fullSavePath, new SaveAsOptions { OverwriteExistingFile = overwritten });
+                FamilyFiles.SaveAsReplacing(doc, fullSavePath, overwritten);
             }
 
             var session = FamilySessionRegistry.Pin(doc, null, "new");
@@ -41,6 +56,7 @@ public class NewFamilyEventHandler : FamilyEditorEventHandlerBase
                 session = session.Describe(),
                 template,
                 savedTo = fullSavePath,
+                createdType,
                 document = FamilyDocInfo.Summarize(doc),
                 warnings = Warnings
             };

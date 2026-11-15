@@ -6,7 +6,7 @@ export function registerNewFamilyTool(server: McpServer) {
   registerFamilyTool(
     server,
     "new_family",
-    "Create a new family document from a template and pin it as the family session: every following family tool edits this document until close_family, without reloading into a project after each step. The document is opened in the background (not shown in the Revit UI). Returns its reference planes, levels and views.",
+    "Create a new family document from a template and pin it as the family session: every following family tool edits this document until close_family, without reloading into a project after each step. The document is opened in the background (not shown in the Revit UI; use open_family_in_editor to show it). If the template has no family types, one is created (typeName, else the file name, else 'Тип 1'). Returns its reference planes, levels and views.",
     {
       template: z
         .string()
@@ -18,6 +18,10 @@ export function registerNewFamilyTool(server: McpServer) {
         .optional()
         .describe("Save the new family to this .rfa path right away; the folder must exist"),
       overwrite: z.boolean().optional().describe("Replace an existing file at savePath (default false)"),
+      typeName: z
+        .string()
+        .optional()
+        .describe("Name of the family type created when the template has none"),
     }
   );
 }
