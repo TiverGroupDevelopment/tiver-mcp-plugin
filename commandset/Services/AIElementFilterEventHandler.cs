@@ -397,7 +397,7 @@ namespace RevitMCPCommandSet.Services
                 // 类别
                 elementInfo.Category = element.Category.Name;
                 // 内置类别
-                elementInfo.BuiltInCategory = Enum.GetName(typeof(BuiltInCategory), element.Category.Id.GetIntValue());
+                elementInfo.BuiltInCategory = Enum.GetName(typeof(BuiltInCategory), Enum.ToObject(typeof(BuiltInCategory), element.Category.Id.GetValue()));
                 // 类型Id
                 elementInfo.TypeId = element.GetTypeId().GetIntValue();
                 //所属房间Id  
@@ -449,7 +449,7 @@ namespace RevitMCPCommandSet.Services
             // 类别
             typeInfo.Category = elementType.Category.Name;
             // 内置类别
-            typeInfo.BuiltInCategory = Enum.GetName(typeof(BuiltInCategory), elementType.Category.Id.GetIntValue());
+            typeInfo.BuiltInCategory = Enum.GetName(typeof(BuiltInCategory), Enum.ToObject(typeof(BuiltInCategory), elementType.Category.Id.GetValue()));
             // 参数字典
             typeInfo.Parameters = GetDimensionParameters(elementType);
             ParameterInfo thicknessParam = GetThicknessInfo(elementType);      //厚度参数
@@ -477,7 +477,7 @@ namespace RevitMCPCommandSet.Services
                     FamilyName = element?.get_Parameter(BuiltInParameter.ELEM_FAMILY_PARAM)?.AsValueString(),
                     Category = element.Category?.Name,
                     BuiltInCategory = element.Category != null ?
-                        Enum.GetName(typeof(BuiltInCategory), element.Category.Id.GetIntValue()) : null,
+                        Enum.GetName(typeof(BuiltInCategory), Enum.ToObject(typeof(BuiltInCategory), element.Category.Id.GetValue())) : null,
                     ElementClass = element.GetType().Name,
                     BoundingBox = GetBoundingBoxInfo(element)
                 };
@@ -532,7 +532,7 @@ namespace RevitMCPCommandSet.Services
                     FamilyName = element?.get_Parameter(BuiltInParameter.ELEM_FAMILY_PARAM)?.AsValueString(),
                     Category = element.Category?.Name,
                     BuiltInCategory = element.Category != null ?
-                        Enum.GetName(typeof(BuiltInCategory), element.Category.Id.GetIntValue()) : null,
+                        Enum.GetName(typeof(BuiltInCategory), Enum.ToObject(typeof(BuiltInCategory), element.Category.Id.GetValue())) : null,
                     ElementClass = element.GetType().Name,
                     BoundingBox = GetBoundingBoxInfo(element)
                 };
@@ -595,7 +595,7 @@ namespace RevitMCPCommandSet.Services
                     FamilyName = element?.get_Parameter(BuiltInParameter.ELEM_FAMILY_PARAM)?.AsValueString(),
                     Category = element.Category?.Name,
                     BuiltInCategory = element.Category != null ?
-                        Enum.GetName(typeof(BuiltInCategory), element.Category.Id.GetIntValue()) : null,
+                        Enum.GetName(typeof(BuiltInCategory), Enum.ToObject(typeof(BuiltInCategory), element.Category.Id.GetValue())) : null,
                     ElementClass = element.GetType().Name,
                     ViewType = view.ViewType.ToString(),
                     Scale = view.Scale,
@@ -663,7 +663,7 @@ namespace RevitMCPCommandSet.Services
                     FamilyName = element?.get_Parameter(BuiltInParameter.ELEM_FAMILY_PARAM)?.AsValueString(),
                     Category = element.Category?.Name,
                     BuiltInCategory = element.Category != null ?
-                        Enum.GetName(typeof(BuiltInCategory), element.Category.Id.GetIntValue()) : null,
+                        Enum.GetName(typeof(BuiltInCategory), Enum.ToObject(typeof(BuiltInCategory), element.Category.Id.GetValue())) : null,
                     ElementClass = element.GetType().Name,
                     BoundingBox = GetBoundingBoxInfo(element)
                 };
@@ -740,7 +740,7 @@ namespace RevitMCPCommandSet.Services
                     FamilyName = element?.get_Parameter(BuiltInParameter.ELEM_FAMILY_PARAM)?.AsValueString(),
                     Category = element.Category?.Name,
                     BuiltInCategory = element.Category != null ?
-                        Enum.GetName(typeof(BuiltInCategory), element.Category.Id.GetIntValue()) : null,
+                        Enum.GetName(typeof(BuiltInCategory), Enum.ToObject(typeof(BuiltInCategory), element.Category.Id.GetValue())) : null,
                     ElementClass = element.GetType().Name,
                     BoundingBox = GetBoundingBoxInfo(element)
                 };
@@ -811,7 +811,7 @@ namespace RevitMCPCommandSet.Services
                     FamilyName = element?.get_Parameter(BuiltInParameter.ELEM_FAMILY_PARAM)?.AsValueString(),
                     Category = element.Category?.Name,
                     BuiltInCategory = element.Category != null ?
-                        Enum.GetName(typeof(BuiltInCategory), element.Category.Id.GetIntValue()) : null,
+                        Enum.GetName(typeof(BuiltInCategory), Enum.ToObject(typeof(BuiltInCategory), element.Category.Id.GetValue())) : null,
                     BoundingBox = GetBoundingBoxInfo(element)
                 };
                 return basicInfo;

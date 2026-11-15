@@ -18,6 +18,12 @@ export function registerSetFamilyPropertiesTool(server: McpServer) {
         .string()
         .optional()
         .describe("Family category: name as shown in Revit, or BuiltInCategory such as OST_GenericModel"),
+      partType: z
+        .string()
+        .optional()
+        .describe(
+          "Part Type of MEP families (PartType enum name): Cap, Elbow, Tee, Cross, Transition, Union, Coupling, PipeFlange, Normal, ... Applied after category, so change both in one call."
+        ),
       workPlaneBased: z.boolean().optional().describe("Work Plane-Based"),
       alwaysVertical: z.boolean().optional().describe("Always vertical"),
       shared: z.boolean().optional().describe("Shared (visible and schedulable when nested)"),

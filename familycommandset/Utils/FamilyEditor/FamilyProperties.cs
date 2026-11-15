@@ -57,7 +57,8 @@ public static class FamilyProperties
 
         return new
         {
-            name = family.Name,
+            // В документе семейства у OwnerFamily пустое имя — берём заголовок документа.
+            name = string.IsNullOrEmpty(family.Name) ? FamilySessionRegistry.StripExtension(doc.Title) : family.Name,
             category = category?.Name,
             builtInCategory = category == null ? null : BuiltInCategoryName(category),
             placementType = family.FamilyPlacementType.ToString(),
@@ -79,6 +80,17 @@ public static class FamilyProperties
         {
             family.FamilyCategory = ResolveCategory(doc, categoryName);
             changed.Add("category");
+        }
+
+        var partTypeName = JsonArgs.OptionalString(args, "partType");
+        if (partTypeName != null)
+        {
+            var partType = ParsePartType(partTypeName);
+            var parameter = family.get_Parameter(BuiltInParameter.FAMILY_CONTENT_PART_TYPE)
+                            ?? throw new InvalidOperationException("У этой категории семейства нет параметра «Тип детали» (только для MEP-категорий)");
+            if (parameter.IsReadOnly) throw new InvalidOperationException("«Тип детали» нельзя изменить для этой категории семейства");
+            parameter.Set((int)partType);
+            changed.Add("partType");
         }
 
         foreach (var property in Writable)
@@ -156,9 +168,31 @@ public static class FamilyProperties
         return result.OrderBy(s => s.name).ToList();
     }
 
-    private static string BuiltInCategoryName(Category category)
+    /// <summary>
+    /// Имя BuiltInCategory (OST_...) или null. В Revit 2024+ у перечисления 64-битная основа,
+    /// поэтому значение приводится через Enum.ToObject, а не (int).
+    /// </summary>
+    public static string BuiltInCategoryName(Category category)
     {
+        if (category == null) return null;
         var value = category.Id.GetValue();
-        return value < 0 && Enum.IsDefined(typeof(BuiltInCategory), (int)value) ? ((BuiltInCategory)(int)value).ToString() : null;
+        if (value >= 0) return null;
+        try
+        {
+            var builtIn = Enum.ToObject(typeof(BuiltInCategory), value);
+            return Enum.IsDefined(typeof(BuiltInCategory), builtIn) ? builtIn.ToString() : null;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Тип детали (PartType) по имени перечисления: Cap, Elbow, Tee, Normal…</summary>
+    public static PartType ParsePartType(string value)
+    {
+        if (Enum.TryParse(value, true, out PartType partType) && !int.TryParse(value, out _)) return partType;
+        throw new ArgumentException(
+            $"Неизвестный тип детали '{value}'. Допустимо: {string.Join(", ", Enum.GetNames(typeof(PartType)))}");
     }
 }

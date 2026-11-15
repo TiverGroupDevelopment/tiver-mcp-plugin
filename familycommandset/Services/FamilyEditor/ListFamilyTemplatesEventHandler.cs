@@ -81,14 +81,7 @@ public class ListFamilyTemplatesEventHandler : FamilyEditorEventHandlerBase
             var family = doc.OwnerFamily;
             var category = family?.FamilyCategory;
             info.Category = category?.Name;
-            if (category != null)
-            {
-                var value = category.Id.GetValue();
-                if (value < 0 && Enum.IsDefined(typeof(BuiltInCategory), (int)value))
-                {
-                    info.BuiltInCategory = ((BuiltInCategory)(int)value).ToString();
-                }
-            }
+            info.BuiltInCategory = FamilyProperties.BuiltInCategoryName(category);
 
             info.PlacementType = family?.FamilyPlacementType.ToString();
             info.Hosting = family?.get_Parameter(BuiltInParameter.FAMILY_HOSTING_BEHAVIOR)?.AsValueString();
