@@ -1,0 +1,241 @@
+{
+  "id": "alterplast",
+  "name": "Альтерпласт",
+  "version": "1.1",
+  "updated": "2026-11-13",
+  "scope": "Семейства трубопроводной арматуры и соединительных деталей (фитингов) для проекта Альтерпласт: краны, муфты, заглушки, отводы и т. п. по чертежам производителей (TEBO и др.).",
+  "activation": "Применять только когда пользователь явно называет проект «Альтерпласт» (или этот профиль). В других проектах эти правила не действуют — там работают обычные команды без профиля.",
+  "revitVersion": "2019",
+  "sharedParameterFile": "ФОП2019.txt",
+  "rulesFile": "ПРАВИЛА.md",
+  "examples": {
+    "good": "D:/Семейства/Альтерпласт/rvt/rfa/Кран_шаровой_полный_проход_TEBO_ВН_ВН_бабочка.rfa",
+    "bad": "D:/Семейства/Альтерпласт/rvt/rfa/Муфта_комбинированная_НР_под_ключ_PP_R.rfa"
+  },
+  "manualRules": [
+    {
+      "rule": "ALT-08",
+      "title": "LOD 300: внешняя форма и характерные элементы, без резьбы, текста и мелочей"
+    },
+    {
+      "rule": "ALT-09",
+      "title": "Из ИД берём внешние габариты; внутренние — только для коннекторов (DN, глубина раструба)"
+    },
+    {
+      "rule": "ALT-12",
+      "title": "Инспекция: копии для инспекции временно не делаются; проверка — по самому семейству и таблице выбора"
+    },
+    {
+      "rule": "ALT-16",
+      "title": "Проход и внутреннюю геометрию не моделировать"
+    },
+    {
+      "rule": "ALT-17",
+      "title": "Нет размера на чертеже — пропорционально чертежу; допущение — в описании параметра, отдельных параметров не заводить"
+    },
+    {
+      "rule": "ALT-19",
+      "title": "Коннектор раструба и внутренней резьбы — в глубине детали; наружная резьба и хвостовик — на торце"
+    },
+    {
+      "rule": "ALT-20",
+      "title": "Имена размеров — как в ИД (ключи DN1/DN2); при расхождении чертежа и таблицы — по таблице"
+    },
+    {
+      "rule": "ALT-22",
+      "title": "Источник каждого параметра ADSK — по таблице ALT-13"
+    }
+  ],
+  "conventions": {
+    "categories": {
+      "арматура (краны, клапаны)": {
+        "category": "OST_PipeAccessory",
+        "partType": "BreaksInto"
+      },
+      "соединительные детали (муфты, заглушки, отводы, тройники)": {
+        "category": "OST_PipeFitting",
+        "partType": "по типу детали: Union (муфта), Transition (переход, комбинированная муфта), Cap, Elbow, Tee… Типа Coupling в Revit нет"
+      }
+    },
+    "template": "Метрическая система, типовая модель.rft → затем set_family_properties category/partType (MEP-шаблонов в установке нет)",
+    "alwaysVertical": true,
+    "flowAxis": "X: коннекторы смотрят вдоль ±X, центр детали в начале координат",
+    "connectorUp": "+Z: ось Y каждого коннектора направлена вверх",
+    "lookupKey": "DN1 — параметр экземпляра, управляет диаметром первого коннектора; остальные размеры и тексты ADSK — size_lookup(LT, \"<столбец>\", <по умолчанию>, DN1)",
+    "lookupTableNameParameter": "LT — текстовый параметр типа с именем таблицы выбора",
+    "materialParameter": "ADSK_Материал — общий параметр типа, связан с материалом всех твёрдых форм и с ADSK_Материал вложенных семейств",
+    "fixedValues": {
+      "ADSK_Единица измерения": "шт.",
+      "ADSK_Количество": 1
+    },
+    "fromLookupTable": [
+      "ADSK_Наименование",
+      "ADSK_Код изделия",
+      "ADSK_Марка",
+      "ADSK_Масса",
+      "ADSK_Масса_Текст"
+    ],
+    "filledInProject": [
+      "ADSK_Обозначение",
+      "ADSK_Позиция"
+    ],
+    "notInCatalog": "Нет в каталоге — значение по умолчанию size_lookup для ADSK_Наименование и ADSK_Марка",
+    "parameterGroups": {
+      "ADSK_* (кроме материала)": "Data (Данные)",
+      "ADSK_Материал": "Materials (Материалы и отделка)",
+      "размеры, DN1/DN2": "Dimensions (Размеры)",
+      "LT": "Other (Прочее)"
+    },
+    "rounding": "Значения ИД — как в ИД; вычисленные размеры — до 0,1 мм по правилам округления",
+    "lookupExport": "export_family_lookup_tables folder: <папка результатов> → CSV (cp1251) в <папка>/таблицы_выбора"
+  },
+  "checks": {
+    "category": {
+      "rule": "ALT-18",
+      "allowed": [
+        "OST_PipeAccessory",
+        "OST_PipeFitting"
+      ]
+    },
+    "requiredParameters": {
+      "rule": "ALT-13",
+      "parameters": [
+        {
+          "name": "ADSK_Единица измерения"
+        },
+        {
+          "name": "ADSK_Завод-изготовитель"
+        },
+        {
+          "name": "ADSK_Код изделия"
+        },
+        {
+          "name": "ADSK_Количество"
+        },
+        {
+          "name": "ADSK_Марка"
+        },
+        {
+          "name": "ADSK_Масса"
+        },
+        {
+          "name": "ADSK_Масса_Текст"
+        },
+        {
+          "name": "ADSK_Наименование"
+        },
+        {
+          "name": "ADSK_Обозначение"
+        },
+        {
+          "name": "ADSK_Позиция",
+          "instance": true
+        },
+        {
+          "name": "ADSK_Материал",
+          "instance": false
+        }
+      ]
+    },
+    "materialParameter": {
+      "rule": "ALT-02",
+      "name": "ADSK_Материал"
+    },
+    "lookupTable": {
+      "rule": "ALT-01",
+      "maxTypes": 2
+    },
+    "nesting": {
+      "rule": "ALT-03",
+      "maxDepth": 1,
+      "maxCount": 3
+    },
+    "nestedShared": {
+      "rule": "ALT-04"
+    },
+    "connectorsLinked": {
+      "rule": "ALT-05"
+    },
+    "connectorOrientation": {
+      "rule": "ALT-06",
+      "up": [
+        0,
+        0,
+        1
+      ]
+    },
+    "connectorSystem": {
+      "rule": "ALT-07",
+      "pipe": "Fitting"
+    },
+    "singleGeometry": {
+      "rule": "ALT-10",
+      "maxForms": 6,
+      "forbid": [
+        "ImportInstance",
+        "FreeFormElement",
+        "DirectShape",
+        "ModelText"
+      ]
+    },
+    "labelsOnPlanes": {
+      "rule": "ALT-11",
+      "allowGeometryLabels": [
+        "шестиг",
+        "шестигр",
+        "под ключ",
+        "hex"
+      ]
+    },
+    "origin": {
+      "rule": "ALT-14",
+      "toleranceMm": 0.5,
+      "axes": [
+        "X",
+        "Y",
+        "Z"
+      ]
+    },
+    "referencePlanes": {
+      "rule": "ALT-15",
+      "maxLengthFactor": 3,
+      "ignoreTemplatePlanes": true,
+      "severity": "fail"
+    },
+    "parameterGroups": {
+      "rule": "ALT-13",
+      "parameters": {
+        "ADSK_Материал": "Materials",
+        "ADSK_Наименование": "Data",
+        "ADSK_Марка": "Data",
+        "ADSK_Код изделия": "Data",
+        "LT": "Other"
+      }
+    },
+    "extraParameters": {
+      "rule": "ALT-17",
+      "forbid": [
+        "Допущения_ИД"
+      ],
+      "allowText": [
+        "LT"
+      ]
+    },
+    "lookupDefaults": {
+      "rule": "ALT-01",
+      "parameters": [
+        "ADSK_Наименование",
+        "ADSK_Марка"
+      ],
+      "text": "Нет в каталоге"
+    },
+    "lookupDecimals": {
+      "rule": "ALT-21",
+      "maxDecimals": 2
+    },
+    "connectorDepth": {
+      "rule": "ALT-19",
+      "requireInside": true
+    }
+  }
+}

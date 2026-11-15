@@ -1,0 +1,19 @@
+{
+  "id": "project-id",
+  "name": "Название проекта",
+  "version": "0.1",
+  "updated": "YYYY-MM-DD",
+  "scope": "К каким семействам относится профиль",
+  "activation": "Применять только когда пользователь явно называет этот проект или профиль.",
+  "revitVersion": "2019",
+  "sharedParameterFile": "ФОП.txt",
+  "rulesFile": "ПРАВИЛА.md",
+  "manualRules": [],
+  "conventions": {},
+  "checks": {
+    "requiredParameters": {
+      "rule": "R-01",
+      "parameters": [{ "name": "ADSK_Наименование" }]
+    }
+  }
+}
