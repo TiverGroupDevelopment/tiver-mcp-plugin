@@ -75,7 +75,7 @@ public sealed class PinnedFamilySession
         // Имя файла равно имени семейства: SaveAs меняет заголовок документа, а имя семейства должно сохраниться.
         var fileName = string.Concat(FamilyName.Split(System.IO.Path.GetInvalidFileNameChars())) + ".rfa";
         var path = System.IO.Path.Combine(directory, fileName);
-        Document.SaveAs(path, new SaveAsOptions { OverwriteExistingFile = true });
+        FamilyFiles.SaveAsReplacing(Document, path, true);
 
         var checkpoint = new FamilyCheckpoint(id, label, path);
         _checkpoints.Add(checkpoint);

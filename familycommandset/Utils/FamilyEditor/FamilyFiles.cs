@@ -55,6 +55,44 @@ public static class FamilyFiles
         throw new ArgumentException($"Шаблон '{template}' не найден в '{root}'. Список шаблонов — list_family_templates.");
     }
 
+    /// <summary>
+    /// SaveAs с заменой существующего файла. Revit 2019 после SaveAs поверх существующего файла
+    /// (OverwriteExistingFile) при каждом следующем Save() пишет в файл устаревшее состояние —
+    /// пустое семейство шаблона, а файл потом не открывается («отсутствует слишком много элементов»).
+    /// Поэтому старый файл сначала убирается в сторону, после успешного SaveAs удаляется, при ошибке возвращается.
+    /// </summary>
+    public static void SaveAsReplacing(Autodesk.Revit.DB.Document doc, string path, bool overwrite)
+    {
+        var fullPath = Path.GetFullPath(path);
+        string aside = null;
+        if (overwrite && File.Exists(fullPath) && !string.Equals(fullPath, doc.PathName, StringComparison.OrdinalIgnoreCase))
+        {
+            aside = fullPath + $".mcp-replace-{Guid.NewGuid():N}.tmp";
+            File.Move(fullPath, aside);
+        }
+
+        try
+        {
+            doc.SaveAs(fullPath, new Autodesk.Revit.DB.SaveAsOptions { OverwriteExistingFile = overwrite });
+        }
+        catch (Exception)
+        {
+            if (aside != null && !File.Exists(fullPath)) File.Move(aside, fullPath);
+            throw;
+        }
+
+        if (aside != null)
+        {
+            try
+            {
+                File.Delete(aside);
+            }
+            catch (Exception)
+            {
+            }
+        }
+    }
+
     /// <summary>Проверяет путь сохранения .rfa и возвращает полный путь и признак существования файла.</summary>
     public static string ValidateSavePath(string path, bool overwrite, out bool existed)
     {

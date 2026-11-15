@@ -26,7 +26,7 @@ public class SaveFamilyEventHandler : FamilyEditorEventHandlerBase
                 {
                     var original = pinned.OriginalPath
                                    ?? throw new ArgumentException("Семейство ещё не сохранялось в свой файл: укажите path (*.rfa)");
-                    doc.SaveAs(original, new SaveAsOptions { OverwriteExistingFile = true });
+                    FamilyFiles.SaveAsReplacing(doc, original, true);
                     return new { path = original, mode = "save" };
                 }
 
@@ -40,7 +40,7 @@ public class SaveFamilyEventHandler : FamilyEditorEventHandlerBase
             }
 
             var fullPath = FamilyFiles.ValidateSavePath(path, overwrite, out var existed);
-            doc.SaveAs(fullPath, new SaveAsOptions { OverwriteExistingFile = overwrite });
+            FamilyFiles.SaveAsReplacing(doc, fullPath, overwrite);
             if (pinned != null) pinned.OriginalPath = fullPath;
             return new { path = fullPath, mode = "saveAs", overwritten = existed };
         });

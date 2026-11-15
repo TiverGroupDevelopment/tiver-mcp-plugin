@@ -65,7 +65,7 @@ public class CloseFamilyEventHandler : FamilyEditorEventHandlerBase
         string savedTo = null;
         if (saveAsPath != null)
         {
-            doc.SaveAs(saveAsPath, new SaveAsOptions { OverwriteExistingFile = overwrite });
+            FamilyFiles.SaveAsReplacing(doc, saveAsPath, overwrite);
             session.OriginalPath = saveAsPath;
             savedTo = saveAsPath;
             familyName = session.FamilyName;
