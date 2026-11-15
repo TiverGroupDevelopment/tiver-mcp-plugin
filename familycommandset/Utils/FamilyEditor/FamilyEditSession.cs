@@ -46,13 +46,19 @@ public sealed class FamilyEditSession : IDisposable
         if (active.IsFamilyDocument)
         {
             var title = FamilySessionRegistry.StripExtension(active.Title);
-            if (familyName != null && !string.Equals(title, familyName, StringComparison.OrdinalIgnoreCase))
+            if (familyName == null || string.Equals(title, familyName, StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException(
-                    $"Активен документ семейства '{title}', а запрошено '{familyName}'. Активируйте проект или нужное семейство либо не передавайте familyName.");
+                return new FamilyEditSession(active, null, title, false);
             }
 
-            return new FamilyEditSession(active, null, title, false);
+            // Активна вкладка другого семейства (например, открытого в редакторе), а familyName — семейство проекта:
+            // ищем его в открытых проектах.
+            active = app.Application.Documents.Cast<Document>()
+                         .Where(d => !d.IsFamilyDocument && !d.IsLinked)
+                         .FirstOrDefault(d => new FilteredElementCollector(d).OfClass(typeof(Family)).Cast<Family>()
+                             .Any(f => string.Equals(f.Name, familyName, StringComparison.OrdinalIgnoreCase)))
+                     ?? throw new InvalidOperationException(
+                         $"Активен документ семейства '{title}', а семейство '{familyName}' не найдено ни в одном открытом проекте. Активируйте нужное семейство или проект.");
         }
 
         if (familyName == null)

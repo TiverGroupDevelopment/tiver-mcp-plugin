@@ -49,6 +49,7 @@ public class LoadFamilyIntoProjectEventHandler : FamilyEditorEventHandlerBase
                 : $"Открыто несколько проектов, укажите project: {string.Join(", ", projects.Select(d => d.Title))}");
         }
 
+        var replaced = ReplaceIfCategoryChanged(familyDoc, project);
         var family = familyDoc.LoadFamily(project, new FamilyLoadOptions(overwriteValues));
         if (HasFailureErrors)
         {
@@ -66,7 +67,52 @@ public class LoadFamilyIntoProjectEventHandler : FamilyEditorEventHandlerBase
                     .Where(e => e != null)
                     .Select(e => new { id = e.Id.GetValue(), name = e.Name })
                     .ToList(),
+            replacedFamilyWithOtherCategory = replaced,
             warnings = Warnings
         };
+    }
+
+    /// <summary>
+    /// Revit не перезагружает семейство, если у него сменилась категория. Если в проекте старое семейство
+    /// без экземпляров — удаляем его и грузим заново; с экземплярами — объясняем, что делать.
+    /// </summary>
+    private string ReplaceIfCategoryChanged(Document familyDoc, Document project)
+    {
+        var name = FamilySessionRegistry.Current?.Document == familyDoc
+            ? FamilySessionRegistry.Current.FamilyName
+            : FamilySessionRegistry.StripExtension(familyDoc.Title);
+        var existing = new FilteredElementCollector(project)
+            .OfClass(typeof(Family))
+            .Cast<Family>()
+            .FirstOrDefault(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
+        var newCategory = familyDoc.OwnerFamily?.FamilyCategory;
+        if (existing == null || newCategory == null || existing.FamilyCategory == null) return null;
+        if (existing.FamilyCategory.Id.GetValue() == newCategory.Id.GetValue()) return null;
+
+        var instances = new FilteredElementCollector(project)
+            .OfClass(typeof(FamilyInstance))
+            .Cast<FamilyInstance>()
+            .Count(i => i.Symbol?.Family?.Id == existing.Id);
+        if (instances > 0)
+        {
+            throw new InvalidOperationException(
+                $"В проекте '{project.Title}' семейство '{name}' имеет категорию «{existing.FamilyCategory.Name}» и {instances} экз.; " +
+                $"Revit не перезагрузит его с категорией «{newCategory.Name}». Удалите экземпляры или переименуйте семейство (save_family с новым path).");
+        }
+
+        var oldCategory = existing.FamilyCategory.Name;
+        var failures = new FailureSuppressor();
+        using (var transaction = new Transaction(project, "MCP: удалить семейство со старой категорией"))
+        {
+            failures.Attach(transaction);
+            transaction.Start();
+            project.Delete(existing.Id);
+            if (transaction.Commit() != TransactionStatus.Committed)
+            {
+                throw new InvalidOperationException($"Не удалось удалить старое семейство '{name}' из проекта: {string.Join("; ", failures.Errors)}");
+            }
+        }
+
+        return $"{name}: «{oldCategory}» → «{newCategory.Name}»";
     }
 }

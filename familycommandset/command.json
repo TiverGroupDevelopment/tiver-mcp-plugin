@@ -229,6 +229,21 @@
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     },
     {
+      "commandName": "list_project_families",
+      "description": "List families loaded in a project with categories, types and instance counts",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "place_family_in_project",
+      "description": "Place a family instance in a project by family, type and level name",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "open_family_in_editor",
+      "description": "Open a family in a Revit family editor tab and set up its view",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
       "commandName": "get_family_mass",
       "description": "Compute family mass from form volumes and material densities",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
