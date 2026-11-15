@@ -267,6 +267,11 @@
       "commandName": "check_family_rules",
       "description": "Check a family against a project rules profile (checks from rules/<project>/profile.json)",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "setup_family_connectors",
+      "description": "Link connectors, set primary, system classification and orient connector Y axis up",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     }
   ]
 }
