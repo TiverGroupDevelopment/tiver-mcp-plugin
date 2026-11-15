@@ -55,6 +55,7 @@ public class TestFamilyFlexEventHandler : FamilyEditorEventHandlerBase
         var failures = new FailureSuppressor();
         string error = null;
         object forms = null;
+        object connectors = null;
 
         using (var group = new TransactionGroup(doc, "MCP: flex " + name))
         {
@@ -63,9 +64,7 @@ public class TestFamilyFlexEventHandler : FamilyEditorEventHandlerBase
             {
                 using (var transaction = new Transaction(doc, "MCP: flex values"))
                 {
-                    var options = transaction.GetFailureHandlingOptions();
-                    options.SetFailuresPreprocessor(failures);
-                    transaction.SetFailureHandlingOptions(options);
+                    failures.Attach(transaction);
                     transaction.Start();
 
                     if (typeName != null) manager.CurrentType = FamilyParameterSpecs.FindType(manager, typeName);
@@ -97,8 +96,21 @@ public class TestFamilyFlexEventHandler : FamilyEditorEventHandlerBase
                                 kind = form.GetType().Name,
                                 isSolid = form.IsSolid,
                                 volumeCm3 = FamilyGeometryReader.VolumeCm3(form),
-                                sizeMm = box == null ? null : FamilyDocInfo.Mm(box.Max - box.Min)
+                                sizeMm = box == null ? null : FamilyDocInfo.Mm(box.Max - box.Min),
+                                minMm = box == null ? null : FamilyDocInfo.Mm(box.Min),
+                                maxMm = box == null ? null : FamilyDocInfo.Mm(box.Max)
                             };
+                        })
+                        .ToList();
+                    connectors = new FilteredElementCollector(doc)
+                        .OfClass(typeof(ConnectorElement))
+                        .Cast<ConnectorElement>()
+                        .Select(c => (object)new
+                        {
+                            id = c.Id.GetValue(),
+                            originMm = FamilyDocInfo.Mm(c.Origin),
+                            direction = new[] { Math.Round(c.CoordinateSystem.BasisZ.X, 4), Math.Round(c.CoordinateSystem.BasisZ.Y, 4), Math.Round(c.CoordinateSystem.BasisZ.Z, 4) },
+                            diameterMm = c.Domain == Domain.DomainPiping ? Math.Round(c.Radius * 2 * 304.8, 3) : (double?)null
                         })
                         .ToList();
                 }
@@ -124,7 +136,8 @@ public class TestFamilyFlexEventHandler : FamilyEditorEventHandlerBase
             error,
             errors = failures.Errors,
             warnings = failures.Warnings,
-            forms
+            forms,
+            connectors
         });
     }
 }
