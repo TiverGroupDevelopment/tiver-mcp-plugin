@@ -73,8 +73,18 @@ public static class FamilyRuleChecker
         Add("lookupDefaults", spec => LookupDefaults(doc, spec));
         Add("lookupDecimals", spec => LookupDecimals(doc, spec));
         Add("connectorDepth", spec => ConnectorDepth(doc, solidBox, spec));
+        // Многопортовые детали (коллекторы, тройники): магистраль + отводы.
+        Add("mainRun", spec => From(MultiPortChecks.MainRun(doc,
+            spec["axis"] != null ? JsonArgs.Vector(spec["axis"], "axis") : XYZ.BasisX,
+            (spec["toleranceMm"]?.Value<double?>() ?? 0.5) / 304.8)));
+        Add("connectorOrientationByDirection", spec => From(MultiPortChecks.OrientationByDirection(doc,
+            spec["up"] != null ? JsonArgs.Vector(spec["up"], "up") : XYZ.BasisZ,
+            spec["verticalY"] != null ? JsonArgs.Vector(spec["verticalY"], "verticalY") : XYZ.BasisX)));
+        Add("partType", spec => From(MultiPortChecks.PartTypeIs(doc, Strings(spec, "allowed"))));
         return results;
     }
+
+    private static RuleResult From(MultiPortChecks.Outcome outcome) => Of(outcome.Status, outcome.Summary, outcome.Details);
 
     private static RuleResult Pass(string summary) => new RuleResult { Status = "pass", Summary = summary };
     private static RuleResult Of(string status, string summary, IEnumerable<string> details = null)
