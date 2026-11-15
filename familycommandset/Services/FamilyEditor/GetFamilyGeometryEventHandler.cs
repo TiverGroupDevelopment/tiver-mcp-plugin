@@ -14,6 +14,9 @@ public class GetFamilyGeometryEventHandler : FamilyEditorEventHandlerBase
     {
         var detail = JsonArgs.OptionalBool(args, "detail", false);
         var onlyIds = JsonArgs.Has(args, "elementIds") ? new HashSet<long>(JsonArgs.Ids(args, "elementIds")) : null;
+        var faceFilter = FaceFilter.Parse(args);
+        var formsOnly = JsonArgs.OptionalBool(args, "formsOnly", false);
+        var includeProfile = JsonArgs.OptionalBool(args, "includeProfile", true);
 
         return Read(app, args, session =>
         {
@@ -26,9 +29,14 @@ public class GetFamilyGeometryEventHandler : FamilyEditorEventHandlerBase
                 .OfType<GenericForm>()
                 .Where(f => onlyIds == null || onlyIds.Contains(f.Id.GetValue()))
                 .Select(f => detail
-                    ? FamilyGeometryReader.DescribeDetailed(doc, manager, f)
+                    ? FamilyGeometryReader.DescribeDetailed(doc, manager, f, faceFilter, includeProfile)
                     : FamilyFormUtils.Describe(doc, manager, f))
                 .ToList();
+
+            if (formsOnly)
+            {
+                return new { category = doc.OwnerFamily?.FamilyCategory?.Name, forms };
+            }
 
             var referencePlanes = new FilteredElementCollector(doc)
                 .OfClass(typeof(ReferencePlane))

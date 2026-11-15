@@ -36,15 +36,23 @@ public static class FamilyGeometryReader
         return Faces(element).Select((face, index) => DescribeFace(face, index)).ToList();
     }
 
-    public static object DescribeDetailed(Document doc, FamilyManager manager, GenericForm form)
+    public static object DescribeDetailed(Document doc, FamilyManager manager, GenericForm form, FaceFilter filter = null, bool includeShape = true)
     {
+        filter ??= FaceFilter.All;
         var faces = Faces(form);
         return new
         {
             summary = FamilyFormUtils.Describe(doc, manager, form),
             volumeCm3 = VolumeCm3(form),
-            shape = DescribeShape(form),
-            faces = faces.Select((face, index) => DescribeFace(face, index)).ToList()
+            shape = includeShape ? DescribeShape(form) : null,
+            faceCount = faces.Count,
+            // Индексы — по полному списку граней, даже если часть отфильтрована: их и ждут размеры и коннекторы.
+            faces = filter.Mode == "none"
+                ? null
+                : faces.Select((face, index) => (face, index))
+                    .Where(pair => filter.Accepts(pair.face))
+                    .Select(pair => DescribeFace(pair.face, pair.index))
+                    .ToList()
         };
     }
 
@@ -250,6 +258,58 @@ public static class FamilyGeometryReader
                 foreach (var nested in Solids(instance.GetInstanceGeometry())) yield return nested;
             }
         }
+    }
+}
+
+/// <summary>
+/// Отбор граней в подробном описании формы. Revit делит цилиндрические и кольцевые грани тел вращения
+/// на две половины, поэтому граней много; фильтр сокращает ответ, не меняя индексы.
+/// </summary>
+public sealed class FaceFilter
+{
+    private const double NormalTolerance = 1e-3;
+
+    public static readonly FaceFilter All = new FaceFilter("all", null, null);
+
+    private FaceFilter(string mode, XYZ normal, double? atMm)
+    {
+        Mode = mode;
+        Normal = normal?.Normalize();
+        AtMm = atMm;
+    }
+
+    /// <summary>all | planar | none</summary>
+    public string Mode { get; }
+
+    /// <summary>Только плоские грани с этой нормалью (направление важно).</summary>
+    public XYZ Normal { get; }
+
+    /// <summary>Только плоские грани, лежащие на расстоянии AtMm от начала координат вдоль Normal.</summary>
+    public double? AtMm { get; }
+
+    public static FaceFilter Parse(JObject args)
+    {
+        var mode = (JsonArgs.OptionalString(args, "faces") ?? "all").ToLowerInvariant();
+        if (mode != "all" && mode != "planar" && mode != "none")
+        {
+            throw new ArgumentException($"faces: допустимо all, planar или none, получено '{mode}'");
+        }
+
+        XYZ normal = JsonArgs.Has(args, "faceNormal") ? JsonArgs.Vector(args["faceNormal"], "faceNormal") : null;
+        double? at = JsonArgs.Has(args, "faceOffset") ? args["faceOffset"].Value<double>() : (double?)null;
+        if (at.HasValue && normal == null) throw new ArgumentException("faceOffset задаётся вместе с faceNormal");
+        return new FaceFilter(normal != null && mode == "all" ? "planar" : mode, normal, at);
+    }
+
+    public bool Accepts(Face face)
+    {
+        if (Mode == "all") return true;
+        if (Mode == "none") return false;
+        if (!(face is PlanarFace planar)) return false;
+        if (Normal == null) return true;
+        if (!planar.FaceNormal.Normalize().IsAlmostEqualTo(Normal, NormalTolerance)) return false;
+        if (!AtMm.HasValue) return true;
+        return Math.Abs(planar.Origin.DotProduct(Normal) * 304.8 - AtMm.Value) < 0.01;
     }
 }
 
