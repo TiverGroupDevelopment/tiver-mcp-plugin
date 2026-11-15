@@ -236,13 +236,58 @@ public static class FamilyProfileBuilder
         return curves;
     }
 
-    private static void AppendOpenPolyline(CurveArray curves, List<XYZ> points, bool closed, double tolerance)
+    /// <summary>Расстояние, ниже которого точки считаются одной и той же (повтор вершины).</summary>
+    private const double SamePointTolerance = 1e-6;
+
+    /// <summary>
+    /// Убирает повторы вершин и проверяет длины отрезков. Отрезок короче ShortCurveTolerance (~0.8 мм)
+    /// Revit не создаёт; раньше такие вершины выбрасывались молча и профиль искажался, теперь — ошибка
+    /// с номерами вершин (по исходному массиву, с нуля).
+    /// </summary>
+    private static List<XYZ> CleanPoints(List<XYZ> points, bool closed, double tolerance, string what)
     {
         var cleaned = new List<XYZ>();
-        foreach (var point in points)
+        var indices = new List<int>();
+        for (var i = 0; i < points.Count; i++)
         {
-            if (cleaned.Count == 0 || cleaned[cleaned.Count - 1].DistanceTo(point) > tolerance) cleaned.Add(point);
+            if (cleaned.Count > 0 && cleaned[cleaned.Count - 1].DistanceTo(points[i]) <= SamePointTolerance) continue;
+            cleaned.Add(points[i]);
+            indices.Add(i);
         }
+
+        if (closed && cleaned.Count > 1 && cleaned[0].DistanceTo(cleaned[cleaned.Count - 1]) <= SamePointTolerance)
+        {
+            cleaned.RemoveAt(cleaned.Count - 1);
+            indices.RemoveAt(indices.Count - 1);
+        }
+
+        var problems = new List<string>();
+        var segments = closed ? cleaned.Count : cleaned.Count - 1;
+        for (var s = 0; s < segments; s++)
+        {
+            var next = (s + 1) % cleaned.Count;
+            var length = cleaned[s].DistanceTo(cleaned[next]);
+            if (length <= tolerance)
+            {
+                problems.Add($"вершины {indices[s]}→{indices[next]}: {Math.Round(length * 304.8, 3)} мм");
+            }
+        }
+
+        if (problems.Count > 0)
+        {
+            var minimum = Math.Round(tolerance * 304.8, 2);
+            throw new ArgumentException(
+                $"{what}: отрезки короче минимальной длины кривой Revit ({minimum} мм) — {string.Join("; ", problems.Take(10))}" +
+                (problems.Count > 10 ? $" и ещё {problems.Count - 10}" : string.Empty) +
+                $". Revit не строит такие кривые: увеличьте отрезки (фаски, уступы, рёбра) до {Math.Ceiling(minimum * 10) / 10} мм и больше или уберите лишние вершины.");
+        }
+
+        return cleaned;
+    }
+
+    private static void AppendOpenPolyline(CurveArray curves, List<XYZ> points, bool closed, double tolerance)
+    {
+        var cleaned = CleanPoints(points, closed, tolerance, "Траектория");
 
         if (cleaned.Count < 2)
         {
@@ -268,16 +313,7 @@ public static class FamilyProfileBuilder
 
     private static void AppendPolyline(CurveArray curves, List<XYZ> points, double tolerance)
     {
-        var cleaned = new List<XYZ>();
-        foreach (var point in points)
-        {
-            if (cleaned.Count == 0 || cleaned[cleaned.Count - 1].DistanceTo(point) > tolerance) cleaned.Add(point);
-        }
-
-        if (cleaned.Count > 1 && cleaned[0].DistanceTo(cleaned[cleaned.Count - 1]) <= tolerance)
-        {
-            cleaned.RemoveAt(cleaned.Count - 1);
-        }
+        var cleaned = CleanPoints(points, true, tolerance, "Контур");
 
         if (cleaned.Count < 3)
         {
@@ -294,11 +330,18 @@ public static class FamilyProfileBuilder
     {
         XYZ firstStart = null;
         XYZ previousEnd = null;
+        var index = -1;
         foreach (var segment in segments)
         {
+            index++;
             var type = segment["type"]?.Value<string>()?.ToLowerInvariant() ?? "line";
             var start = plane.ToWorld(segment["start"] ?? throw new ArgumentException("У сегмента нет start"), normalOffsetMm);
             var end = plane.ToWorld(segment["end"] ?? throw new ArgumentException("У сегмента нет end"), normalOffsetMm);
+            if (start.DistanceTo(end) <= tolerance)
+            {
+                throw new ArgumentException(
+                    $"Сегмент {index}: длина {Math.Round(start.DistanceTo(end) * 304.8, 3)} мм меньше минимальной длины кривой Revit ({Math.Round(tolerance * 304.8, 2)} мм)");
+            }
 
             if (previousEnd != null && previousEnd.DistanceTo(start) > tolerance)
             {
