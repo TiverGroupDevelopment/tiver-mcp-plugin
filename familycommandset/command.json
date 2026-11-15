@@ -227,6 +227,16 @@
       "commandName": "restore_family_checkpoint",
       "description": "Roll the family session back to a checkpoint",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "diagnose_revit",
+      "description": "Report Revit state: dialogs, documents, family session, updaters",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
+      "commandName": "dismiss_revit_dialog",
+      "description": "Read or close a modal Revit dialog that blocks commands",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     }
   ]
 }
