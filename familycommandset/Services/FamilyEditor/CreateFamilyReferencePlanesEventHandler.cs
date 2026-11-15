@@ -27,6 +27,7 @@ public class CreateFamilyReferencePlanesEventHandler : FamilyEditorEventHandlerB
                 StringComparer.OrdinalIgnoreCase);
 
             var created = new List<ReferencePlane>();
+            var trims = new List<Trim>();
             var notes = new List<string>();
 
             foreach (var spec in specs)
@@ -76,6 +77,16 @@ public class CreateFamilyReferencePlanesEventHandler : FamilyEditorEventHandlerB
                 }
 
                 created.Add(plane);
+                var depth = JsonArgs.Has(spec, "depth") ? JsonArgs.OptionalDouble(spec, "depth", DefaultExtentMm) / 304.8 : extent;
+                trims.Add(new Trim { Plane = plane, Name = name, Origin = origin, Along = along, Extent = extent, Depth = depth });
+            }
+
+            doc.Regenerate();
+            // По умолчанию Revit тянет плоскость в перпендикулярных видах на 9 м (30 футов): обрезаем её модельные
+            // границы во всех видах, где она видна. Вдоль линии на виде создания — extent, поперёк — depth.
+            foreach (var trim in trims)
+            {
+                TrimExtents(doc, trim, notes);
             }
 
             doc.Regenerate();
@@ -85,6 +96,41 @@ public class CreateFamilyReferencePlanesEventHandler : FamilyEditorEventHandlerB
                 notes
             };
         });
+    }
+
+    private sealed class Trim
+    {
+        public ReferencePlane Plane;
+        public string Name;
+        public XYZ Origin;
+        public XYZ Along;
+        public double Extent;
+        public double Depth;
+    }
+
+    /// <summary>Модельные границы плоскости во всех планах и фасадах: отрезок с центром в проекции origin.</summary>
+    private static void TrimExtents(Document doc, Trim trim, List<string> notes)
+    {
+        var views = new FilteredElementCollector(doc).OfClass(typeof(View)).Cast<View>()
+            .Where(v => !v.IsTemplate && (v is ViewPlan || v.ViewType == ViewType.Elevation || v.ViewType == ViewType.Section));
+        foreach (var view in views)
+        {
+            try
+            {
+                if (!trim.Plane.CanBeVisibleInView(view)) continue;
+                var curves = trim.Plane.GetCurvesInView(DatumExtentType.Model, view);
+                if (curves.Count == 0) continue;
+                var p0 = curves[0].GetEndPoint(0);
+                var direction = (curves[0].GetEndPoint(1) - p0).Normalize();
+                var center = p0 + direction * (trim.Origin - p0).DotProduct(direction);
+                var half = Math.Abs(direction.DotProduct(trim.Along)) > 0.99 ? trim.Extent : trim.Depth;
+                trim.Plane.SetCurveInView(DatumExtentType.Model, view, Line.CreateBound(center - direction * half, center + direction * half));
+            }
+            catch (Exception ex)
+            {
+                notes.Add($"'{trim.Name}': границы в виде «{view.Name}» не изменены ({ex.Message})");
+            }
+        }
     }
 
     private static void ResolveGeometry(JObject spec, out XYZ origin, out XYZ normal)

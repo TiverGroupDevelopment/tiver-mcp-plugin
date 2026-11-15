@@ -38,6 +38,13 @@ const plane = z.object({
     .describe("Is Reference property: how the plane can be dimensioned or snapped to in a project"),
   definesOrigin: z.boolean().optional().describe("Defines Origin property"),
   extent: z.number().positive().optional().describe("Half-length of the drawn plane line, mm (default 1000)"),
+  depth: z
+    .number()
+    .positive()
+    .optional()
+    .describe(
+      "Half-length of the plane in the perpendicular views (the line you see in elevations/plans across the drawing view), mm. Default = extent. Without trimming Revit draws the plane 9 m long there."
+    ),
   view: z.string().optional().describe("View to draw in; chosen automatically when omitted"),
 });
 
