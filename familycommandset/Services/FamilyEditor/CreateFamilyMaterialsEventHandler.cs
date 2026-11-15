@@ -51,6 +51,11 @@ public class CreateFamilyMaterialsEventHandler : FamilyEditorEventHandlerBase
                 var materialClass = JsonArgs.OptionalString(spec, "materialClass");
                 if (materialClass != null) material.MaterialClass = materialClass;
 
+                if (JsonArgs.Has(spec, "densityKgM3"))
+                {
+                    FamilyMaterials.SetDensity(doc, material, spec["densityKgM3"].Value<double>());
+                }
+
                 result.Add(new { created, material = FamilyMaterials.Describe(material) });
             }
 

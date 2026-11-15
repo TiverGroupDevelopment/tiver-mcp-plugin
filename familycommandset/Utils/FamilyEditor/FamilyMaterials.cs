@@ -32,6 +32,8 @@ public static class FamilyMaterials
         throw new ArgumentException($"Цвет должен быть [r, g, b], {{r, g, b}} или \"#RRGGBB\", получено: {token}");
     }
 
+    private const double CubicFeetToCubicMeters = 0.028316846592;
+
     public static object Describe(Material material)
     {
         var color = material.Color;
@@ -41,8 +43,34 @@ public static class FamilyMaterials
             name = material.Name,
             materialClass = material.MaterialClass,
             color = color != null && color.IsValid ? new[] { (int)color.Red, color.Green, color.Blue } : null,
-            transparency = material.Transparency
+            transparency = material.Transparency,
+            densityKgM3 = Density(material)
         };
+    }
+
+    /// <summary>Плотность материала из физического ресурса, кг/м³; null — ресурса нет.</summary>
+    public static double? Density(Material material)
+    {
+        var id = material.StructuralAssetId;
+        if (id == null || id == ElementId.InvalidElementId) return null;
+        var asset = (material.Document.GetElement(id) as PropertySetElement)?.GetStructuralAsset();
+        return asset == null || asset.Density <= 0 ? (double?)null : Math.Round(asset.Density / CubicFeetToCubicMeters, 3);
+    }
+
+    /// <summary>
+    /// Задаёт плотность через собственный физический ресурс материала (создаётся, если ресурса нет или он общий
+    /// с другими материалами). Нужна get_family_mass.
+    /// </summary>
+    public static void SetDensity(Document doc, Material material, double densityKgM3)
+    {
+        if (densityKgM3 <= 0) throw new ArgumentException("densityKgM3 должна быть больше 0");
+        // Имена ресурсов в документе уникальны: добавляем короткий суффикс.
+        var asset = new StructuralAsset($"{material.Name} MCP {Guid.NewGuid().ToString("N").Substring(0, 6)}", StructuralAssetClass.Basic)
+        {
+            Density = densityKgM3 * CubicFeetToCubicMeters
+        };
+        var property = PropertySetElement.Create(doc, asset);
+        material.SetMaterialAspectByPropertySet(MaterialAspect.Structural, property.Id);
     }
 
     private static byte Channel(JToken value)

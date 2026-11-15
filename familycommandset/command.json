@@ -229,6 +229,11 @@
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     },
     {
+      "commandName": "get_family_mass",
+      "description": "Compute family mass from form volumes and material densities",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
       "commandName": "diagnose_revit",
       "description": "Report Revit state: dialogs, documents, family session, updaters",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
