@@ -199,6 +199,11 @@
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     },
     {
+      "commandName": "export_family_lookup_tables",
+      "description": "Batch-export family lookup tables to CSV from a folder of .rfa files",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
       "commandName": "manage_family_lookup_tables",
       "description": "List, import, export or remove family lookup tables",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"

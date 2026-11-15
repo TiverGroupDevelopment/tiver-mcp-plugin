@@ -65,7 +65,9 @@ public class ExportFamilyTypeCatalogEventHandler : FamilyEditorEventHandlerBase
                 if (only != null && !only.Contains(name)) continue;
                 var kind = FamilyParameterSpecs.Classify(parameter);
                 string reason = null;
-                if (parameter.IsDeterminedByFormula) reason = "formula";
+                // В каталоге типоразмеров только параметры типа: значения экземпляра Revit из него не читает.
+                if (parameter.IsInstance) reason = "instance parameter";
+                else if (parameter.IsDeterminedByFormula) reason = "formula";
                 else if (parameter.IsReporting) reason = "reporting";
                 else if (kind == FamilyValueKind.Other) reason = "unsupported type";
                 else if (!types.Any(t => t.HasValue(parameter))) reason = "no values";
@@ -107,7 +109,7 @@ public class ExportFamilyTypeCatalogEventHandler : FamilyEditorEventHandlerBase
         });
     }
 
-    private static string UnitSuffix(FamilyValueKind kind)
+    internal static string UnitSuffix(FamilyValueKind kind)
     {
         switch (kind)
         {
