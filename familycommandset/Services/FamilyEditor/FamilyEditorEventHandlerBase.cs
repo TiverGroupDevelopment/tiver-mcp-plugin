@@ -41,6 +41,12 @@ public abstract class FamilyEditorEventHandlerBase : IExternalEventHandler, IWai
             e.SetProcessingResult(failures.Process(e.GetFailuresAccessor()));
         app.Application.FailuresProcessing += failuresHandler;
 
+        // Диалоги Revit (не сбои транзакций: «Сохранить изменения?», сообщения надстроек и т.п.)
+        // закрываются отменой, их текст возвращается в ответе.
+        var dialogs = new List<string>();
+        EventHandler<Autodesk.Revit.UI.Events.DialogBoxShowingEventArgs> dialogHandler = (sender, e) => dialogs.Add(DismissDialog(e));
+        app.DialogBoxShowing += dialogHandler;
+
         try
         {
             Result = new AIResult<object> { Success = true, Message = "OK", Response = Run(app, _arguments) };
@@ -52,9 +58,37 @@ public abstract class FamilyEditorEventHandlerBase : IExternalEventHandler, IWai
         finally
         {
             app.Application.FailuresProcessing -= failuresHandler;
+            app.DialogBoxShowing -= dialogHandler;
+            if (dialogs.Count > 0 && Result != null)
+            {
+                Result.Message += $" | Revit показывал окна, они закрыты отменой: {string.Join("; ", dialogs)}";
+            }
+
             TaskCompleted = true;
             _resetEvent.Set();
         }
+    }
+
+    private static string DismissDialog(Autodesk.Revit.UI.Events.DialogBoxShowingEventArgs e)
+    {
+        string message = null;
+        if (e is Autodesk.Revit.UI.Events.TaskDialogShowingEventArgs task) message = task.Message;
+        else if (e is Autodesk.Revit.UI.Events.MessageBoxShowingEventArgs box) message = box.Message;
+
+        var description = string.IsNullOrWhiteSpace(message) ? e.DialogId : $"{e.DialogId}: {message}";
+        // IDCANCEL, затем IDCLOSE и IDOK — какой из них окно примет.
+        foreach (var code in new[] { 2, 8, 1 })
+        {
+            try
+            {
+                if (e.OverrideResult(code)) return description;
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        return description + " (закрыть не удалось)";
     }
 
     public abstract string GetName();
@@ -74,9 +108,7 @@ public abstract class FamilyEditorEventHandlerBase : IExternalEventHandler, IWai
 
         using (var transaction = new Transaction(session.Document, transactionName))
         {
-            var options = transaction.GetFailureHandlingOptions();
-            options.SetFailuresPreprocessor(_failures);
-            transaction.SetFailureHandlingOptions(options);
+            _failures.Attach(transaction);
             transaction.Start();
             result = action(session.Document);
             var status = transaction.Commit();

@@ -42,7 +42,30 @@ public sealed class FailureSuppressor : IFailuresPreprocessor
             AddUnique(Errors, message);
         }
 
-        return hasErrors ? FailureProcessingResult.ProceedWithRollBack : FailureProcessingResult.Continue;
+        if (!hasErrors) return FailureProcessingResult.Continue;
+
+        // Без ClearAfterRollback Revit после отката всё равно показывает ошибки в модальном окне,
+        // и команда висит до таймаута, пока пользователь его не закроет.
+        try
+        {
+            var options = failuresAccessor.GetFailureHandlingOptions();
+            options.SetClearAfterRollback(true);
+            failuresAccessor.SetFailureHandlingOptions(options);
+        }
+        catch (Exception)
+        {
+        }
+
+        return FailureProcessingResult.ProceedWithRollBack;
+    }
+
+    /// <summary>Настройки транзакции: этот препроцессор и очистка сбоев после отката.</summary>
+    public void Attach(Transaction transaction)
+    {
+        var options = transaction.GetFailureHandlingOptions();
+        options.SetFailuresPreprocessor(this);
+        options.SetClearAfterRollback(true);
+        transaction.SetFailureHandlingOptions(options);
     }
 
     private static void AddUnique(List<string> target, string message)
