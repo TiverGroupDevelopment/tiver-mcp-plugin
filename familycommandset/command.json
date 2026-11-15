@@ -99,6 +99,11 @@
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     },
     {
+      "commandName": "lock_family_sketch",
+      "description": "Lock sketch lines and revolution axes of forms to reference planes",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
       "commandName": "modify_family_form",
       "description": "Change extents, angles, solid/void, visibility or material of a family form",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
