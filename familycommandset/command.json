@@ -269,6 +269,11 @@
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
     },
     {
+      "commandName": "create_family_inspection_copy",
+      "description": "Save a copy of a family with overall dimensions for an inspector",
+      "assemblyPath": "RevitMCPFamilyCommandSet.dll"
+    },
+    {
       "commandName": "setup_family_connectors",
       "description": "Link connectors, set primary, system classification and orient connector Y axis up",
       "assemblyPath": "RevitMCPFamilyCommandSet.dll"
