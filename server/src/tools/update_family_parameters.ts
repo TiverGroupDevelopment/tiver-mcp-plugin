@@ -11,7 +11,7 @@ export function registerUpdateFamilyParametersTool(server: McpServer) {
   registerFamilyTool(
     server,
     "update_family_parameters",
-    `Change existing family parameters: rename, switch between type and instance, make reporting (the value is read from a dimension and can be used in formulas) or non-reporting, set the tooltip description, or remove. Values and formulas are set with set_family_parameter_values / set_family_parameter_formulas. ${sessionNote}`,
+    `Change existing family parameters: rename, switch between type and instance, make reporting (the value is read from a dimension and can be used in formulas) or non-reporting, set the tooltip description, move to another Properties palette group, or remove. Values and formulas are set with set_family_parameter_values / set_family_parameter_formulas. ${sessionNote}`,
     {
       familyName: familyNameField,
       parameters: z
@@ -25,6 +25,10 @@ export function registerUpdateFamilyParametersTool(server: McpServer) {
               .optional()
               .describe("Reporting parameter; must be an instance parameter labelling a dimension"),
             description: z.string().optional().describe("Tooltip description"),
+            group: z
+              .enum(["Dimensions", "Constraints", "Data", "Text", "IdentityData", "Materials", "Graphics", "Construction", "Visibility", "Other"])
+              .optional()
+              .describe("Move to this Properties palette group (e.g. Materials for a material parameter)"),
             remove: z.boolean().optional().describe("Delete the parameter from the family"),
           })
         )

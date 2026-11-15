@@ -61,6 +61,13 @@ public class UpdateFamilyParametersEventHandler : FamilyEditorEventHandlerBase
                     changed.Add("description");
                 }
 
+                var group = JsonArgs.OptionalString(spec, "group");
+                if (group != null && !FamilyParameterSpecs.IsInGroup(parameter, group))
+                {
+                    FamilyParameterSpecs.SetGroup(parameter, group);
+                    changed.Add("group");
+                }
+
                 var rename = JsonArgs.OptionalString(spec, "rename");
                 if (rename != null && !string.Equals(rename, parameter.Definition.Name, StringComparison.Ordinal))
                 {
@@ -70,7 +77,7 @@ public class UpdateFamilyParametersEventHandler : FamilyEditorEventHandlerBase
 
                 if (changed.Count == 0)
                 {
-                    throw new ArgumentException($"Для параметра '{name}' не задано ни одного изменения (rename, isInstance, reporting, description, remove)");
+                    throw new ArgumentException($"Для параметра '{name}' не задано ни одного изменения (rename, isInstance, reporting, description, group, remove)");
                 }
 
                 result.Add(new

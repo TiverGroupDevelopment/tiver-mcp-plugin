@@ -98,6 +98,28 @@ public static class FamilyParameterSpecs
         return FamilyValueKind.Other;
     }
 
+    /// <summary>Параметр в группе с этим именем (Dimensions, Data, Materials, …)?</summary>
+    public static bool IsInGroup(FamilyParameter parameter, string group)
+    {
+#if REVIT2022_OR_GREATER
+        return parameter.Definition.GetGroupTypeId() == ResolveGroup(group);
+#else
+        return parameter.Definition.ParameterGroup == ResolveGroup(group);
+#endif
+    }
+
+    /// <summary>Перенести параметр в группу (Dimensions, Data, Materials, …).</summary>
+    public static void SetGroup(FamilyParameter parameter, string group)
+    {
+        if (!(parameter.Definition is InternalDefinition definition)) throw new InvalidOperationException($"Группу параметра '{parameter.Definition.Name}' изменить нельзя");
+#if REVIT2022_OR_GREATER
+        definition.SetGroupTypeId(ResolveGroup(group));
+#else
+        // В API Revit 2019–2021 группа параметра только для чтения.
+        throw new NotSupportedException($"Параметр '{definition.Name}': в этой версии Revit группу параметра нельзя изменить через API. Задайте group при добавлении параметра (add_family_parameters / add_family_shared_parameters) или удалите и добавьте параметр заново.");
+#endif
+    }
+
     public static string DescribeGroup(FamilyParameter parameter)
     {
 #if REVIT2022_OR_GREATER
