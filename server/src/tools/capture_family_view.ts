@@ -27,13 +27,29 @@ function extractImage(node: unknown, found: ExtractedImage[]): unknown {
 export function registerCaptureFamilyViewTool(server: McpServer) {
   server.tool(
     "capture_family_view",
-    `Render a family view to a PNG and return it as an image, to check the modelled geometry visually. Defaults to the first 3D view; pass a plan or elevation name for orthographic checks. Uses Revit image export, so it does not depend on the Revit window being visible. ${sessionNote}`,
+    `Render a family view to a PNG and return it as an image, to check the modelled geometry visually. Without view, a temporary isometric 3D view aimed at the forms is rendered (works for small parts too). With a plan or elevation name, reference planes, levels and dimensions are hidden by default so the image fits the geometry. Temporary changes are rolled back; the family is not modified. Uses Revit image export, so it does not depend on the Revit window being visible. ${sessionNote}`,
     {
       familyName: familyNameField,
       view: z
         .string()
         .optional()
-        .describe("View name (see get_family_geometry → views). Default: first 3D view"),
+        .describe("View name (see get_family_geometry → views). Default: temporary isometric 3D view"),
+      direction: z
+        .union([z.tuple([z.number(), z.number(), z.number()]), z.object({ x: z.number(), y: z.number(), z: z.number() })])
+        .optional()
+        .describe("Viewing direction for the temporary 3D view (default [-1, 1, -1]: from front-right-top)"),
+      style: z
+        .enum(["wireframe", "hiddenLine", "shaded", "shadedWithEdges", "realistic"])
+        .optional()
+        .describe("Display style (default shadedWithEdges)"),
+      hideDatums: z
+        .boolean()
+        .optional()
+        .describe("For plans and elevations: hide reference planes, levels, reference lines and dimensions (default true)"),
+      showConnectors: z
+        .boolean()
+        .optional()
+        .describe("Show MEP connector symbols (default false: their screen-size symbols would shrink a small part to a dot)"),
       pixels: z
         .number()
         .int()
