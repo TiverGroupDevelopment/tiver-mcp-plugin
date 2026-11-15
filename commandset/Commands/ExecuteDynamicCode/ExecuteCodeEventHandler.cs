@@ -21,6 +21,8 @@ namespace RevitMCPCommandSet.Commands.ExecuteDynamicCode
 
         // 代码执行参数
         private string _generatedCode;
+        private string _extraClasses = string.Empty;
+        private string _extraUsings = string.Empty;
         private object[] _executionParameters;
         private string _transactionMode = TransactionModeAuto;
         private bool _suppressFailures = true;
@@ -41,6 +43,16 @@ namespace RevitMCPCommandSet.Commands.ExecuteDynamicCode
             _suppressFailures = suppressFailures;
             TaskCompleted = false;
             _resetEvent.Reset();
+        }
+
+        /// <summary>
+        /// Свои классы (IFamilyLoadOptions, IFailuresPreprocessor, вспомогательные типы) — вставляются в namespace
+        /// AIGeneratedCode рядом с CodeExecutor; дополнительные using — в начало файла.
+        /// </summary>
+        public void SetExtraSource(string classes, string usings)
+        {
+            _extraClasses = classes ?? string.Empty;
+            _extraUsings = usings ?? string.Empty;
         }
 
         // 等待执行完成 - IWaitableExternalEventHandler接口实现
@@ -85,6 +97,7 @@ namespace RevitMCPCommandSet.Commands.ExecuteDynamicCode
                         {
                             var options = transaction.GetFailureHandlingOptions();
                             options.SetFailuresPreprocessor(suppressor);
+                            options.SetClearAfterRollback(true);
                             transaction.SetFailureHandlingOptions(options);
                         }
 
@@ -148,6 +161,7 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using System.Collections.Generic;
+{_extraUsings}
 
 namespace AIGeneratedCode
 {{
@@ -159,6 +173,8 @@ namespace AIGeneratedCode
             {code}
         }}
     }}
+
+{_extraClasses}
 }}";
 
             Assembly assembly;

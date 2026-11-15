@@ -25,6 +25,16 @@ export function registerSendCodeToRevitTool(server: McpServer) {
         .describe(
           "Optional execution parameters that will be passed to your code"
         ),
+      classes: z
+        .string()
+        .optional()
+        .describe(
+          "Extra C# type declarations placed in the same namespace as the executor, e.g. classes implementing IFamilyLoadOptions or IFailuresPreprocessor, or helper classes. Use them from code by name."
+        ),
+      usings: z
+        .string()
+        .optional()
+        .describe("Extra using directives, e.g. 'using Autodesk.Revit.DB.Plumbing;' (System, Linq, Collections.Generic, Revit DB and UI are already there)"),
       transactionMode: transactionModeSchema,
       suppressFailures: z
         .boolean()
@@ -39,6 +49,8 @@ export function registerSendCodeToRevitTool(server: McpServer) {
         parameters: args.parameters || [],
         transactionMode: args.transactionMode,
         suppressFailures: args.suppressFailures,
+        classes: args.classes,
+        usings: args.usings,
       };
 
       try {
