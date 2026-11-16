@@ -1,11 +1,11 @@
 {
-    "name": "mcp-server-for-revit",
+    "name": "tiver-mcp-server",
     "version": "1.0.0",
-    "description": "MCP server for interacting with Autodesk Revit through AI assistants like Claude",
+    "description": "MCP server of tiver-mcp-plugin: Revit tools for the Claude agent",
     "main": "index.js",
     "type": "module",
     "bin": {
-        "mcp-server-for-revit": "./build/index.js"
+        "tiver-mcp-server": "./build/index.js"
     },
     "engines": {
         "node": ">=20.0.0"
@@ -22,7 +22,7 @@
     ],
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/mcp-servers-for-revit/mcp-servers-for-revit.git"
+        "url": "git+https://github.com/TiverGroupDevelopment/tiver-mcp-plugin.git"
     },
     "keywords": [
         "mcp",
@@ -38,9 +38,9 @@
         "access": "public"
     },
     "bugs": {
-        "url": "https://github.com/mcp-servers-for-revit/mcp-servers-for-revit/issues"
+        "url": "https://github.com/TiverGroupDevelopment/tiver-mcp-plugin/issues"
     },
-    "homepage": "https://github.com/mcp-servers-for-revit/mcp-servers-for-revit#readme",
+    "homepage": "https://github.com/TiverGroupDevelopment/tiver-mcp-plugin#readme",
     "dependencies": {
         "@modelcontextprotocol/sdk": "^1.7.0",
         "better-sqlite3": "^12.8.0",

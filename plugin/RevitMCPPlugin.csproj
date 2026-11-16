@@ -85,7 +85,7 @@
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
     </ItemGroup>
     <ItemGroup>
-        <None Update="mcp-servers-for-revit.addin">
+        <None Update="tiver-mcp-plugin.addin">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
