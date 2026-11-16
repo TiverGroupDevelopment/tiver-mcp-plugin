@@ -1,19 +1,20 @@
 {
   "id": "project-id",
   "name": "Название проекта",
+  "kind": "project",
+  "status": "draft",
   "version": "0.1",
   "updated": "YYYY-MM-DD",
+  "extends": ["global"],
   "scope": "К каким семействам относится профиль",
-  "activation": "Применять только когда пользователь явно называет этот проект или профиль.",
+  "activation": "Применять, когда пользователь явно называет проект или профиль.",
   "revitVersion": "2019",
   "sharedParameterFile": "ФОП.txt",
-  "rulesFile": "ПРАВИЛА.md",
+  "rulesFiles": {
+    "parameters": "правила/параметры.md",
+    "geometry": "правила/геометрия.md"
+  },
   "manualRules": [],
   "conventions": {},
-  "checks": {
-    "requiredParameters": {
-      "rule": "R-01",
-      "parameters": [{ "name": "ADSK_Наименование" }]
-    }
-  }
+  "checks": {}
 }

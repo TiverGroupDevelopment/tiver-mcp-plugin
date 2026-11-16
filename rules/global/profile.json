@@ -1,0 +1,32 @@
+{
+  "id": "global",
+  "name": "Общие правила",
+  "kind": "global",
+  "status": "draft",
+  "version": "0.1",
+  "updated": "2026-11-15",
+  "scope": "Любые семейства Revit, независимо от проекта: правила, которые готовы применять, когда проект не назван.",
+  "activation": "Основа любого профиля проекта (extends). Применяются сами, когда проект не назван.",
+  "rulesFiles": {
+    "geometry": "правила/геометрия.md"
+  },
+  "checks": {
+    "singleGeometry": {
+      "rule": "GEO-01",
+      "maxForms": 999,
+      "forbid": [
+        "ImportInstance",
+        "FreeFormElement",
+        "DirectShape"
+      ]
+    },
+    "labelsOnPlanes": {
+      "rule": "GEO-02"
+    },
+    "referencePlanes": {
+      "rule": "GEO-03",
+      "maxLengthFactor": 3,
+      "ignoreTemplatePlanes": true
+    }
+  }
+}

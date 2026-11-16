@@ -1,0 +1,71 @@
+{
+  "id": "adsk",
+  "name": "Параметры ADSK",
+  "kind": "pack",
+  "status": "draft",
+  "version": "0.1",
+  "updated": "2026-11-15",
+  "scope": "Семейства изделий, которые попадают в спецификации по стандарту ADSK: обязательные общие параметры ADSK и материал через ADSK_Материал. Состав взят из профиля alterplast 1.1.",
+  "activation": "Сам по себе не применяется. Подключается профилем проекта через extends; ФОП задаёт проект (sharedParameterFile), GUID берутся из него.",
+  "rulesFiles": {
+    "parameters": "правила/параметры.md",
+    "graphics": "правила/материалы.md"
+  },
+  "conventions": {
+    "materialParameter": "ADSK_Материал — общий параметр типа, связан с материалом всех твёрдых форм и с ADSK_Материал вложенных семейств",
+    "fixedValues": {
+      "ADSK_Единица измерения": "шт.",
+      "ADSK_Количество": 1
+    },
+    "filledInProject": [
+      "ADSK_Обозначение",
+      "ADSK_Позиция"
+    ]
+  },
+  "checks": {
+    "requiredParameters": {
+      "rule": "ADSK-01",
+      "parameters": [
+        {
+          "name": "ADSK_Единица измерения"
+        },
+        {
+          "name": "ADSK_Завод-изготовитель"
+        },
+        {
+          "name": "ADSK_Код изделия"
+        },
+        {
+          "name": "ADSK_Количество"
+        },
+        {
+          "name": "ADSK_Марка"
+        },
+        {
+          "name": "ADSK_Масса"
+        },
+        {
+          "name": "ADSK_Масса_Текст"
+        },
+        {
+          "name": "ADSK_Наименование"
+        },
+        {
+          "name": "ADSK_Обозначение"
+        },
+        {
+          "name": "ADSK_Позиция",
+          "instance": true
+        },
+        {
+          "name": "ADSK_Материал",
+          "instance": false
+        }
+      ]
+    },
+    "materialParameter": {
+      "rule": "ADSK-02",
+      "name": "ADSK_Материал"
+    }
+  }
+}
