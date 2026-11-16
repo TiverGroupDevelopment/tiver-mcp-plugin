@@ -5,7 +5,9 @@
 | Что | Где |
 |---|---|
 | Правила | [rules/ПроПроект](../../rules/ПроПроект/profile.json) — наследует: global, adsk; ФОП — `ФОП2019.txt` |
-| План работы | [ПЛАН.md](ПЛАН.md) |
+| План моделирования | [план-моделирования.md](план-моделирования.md) — все 159 семейств: способ, исходник, категория, габарит, допущения |
+| Отчёт | [ОТЧЁТ.md](ОТЧЁТ.md); с картинками — `ПроПроект3/моделирование/отчёт.html` |
+| Кандидаты в команды | [кандидаты-в-команды.md](кандидаты-в-команды.md) |
 | Исходные семейства (свод) | [исходные-семейства.md](исходные-семейства.md) |
 | Скрипты без сборки | [scripts/](scripts/README.md) — запуск `run_project_script` |
 | Набор команд | `ПроПроект` в `commandSets` корневого `command.json` (`"project": "proproekt"`): все команды Global; свои команды проекта добавляются с `"sets": ["ПроПроект"]` |
@@ -20,13 +22,20 @@
 | `ПроПроект3/rvt/proj/К01_ТХ_П_R24.rvt` | модель с исходными семействами (Revit 2024; читать в 2025/2026) |
 | `ПроПроект3/исходные семейства/<семейство>/` | снимок исходного семейства: `family.json`, `карточка.md`, `превью.png`, копия `.rfa` Revit 2026 |
 | `ПроПроект3/Превью семейств/` | PNG исходных семейств |
+| `ПроПроект3/моделирование/` | `jobs.json`, лог построения, проверка (`проверка/`: verify.jsonl, rules.jsonl, сетки, картинки), `отчёт.html` |
 | `ПроПроект3/rvt/rfa/` | результат: семейства Revit 2019 |
 
 ## Скрипты
 
-| Скрипт | Revit | Что делает |
+| Скрипт | Где | Что делает |
 |---|---|---|
-| [collect_source_families](scripts/collect_source_families.cs) | 2025/2026, открыт проект R24 | `family.json` и копия `.rfa` по каждому семейству из списка |
+| [collect_source_families](scripts/collect_source_families.cs) | Revit 2025/2026, открыт проект R24 | `family.json` и копия `.rfa` по каждому семейству из списка |
+| [tools/make_jobs.py](tools/make_jobs.py) | Python | задания `jobs.json` по выгрузке таблицы и снимкам исходников |
+| [build_families](scripts/build_families.cs) | Revit 2019 | семейства по заданиям: кубик, цилиндр, перенос исходника; три параметра ADSK; сохранение |
+| [verify_families](scripts/verify_families.cs) | Revit 2019 | проверка готовых `.rfa` по требованиям, сетки для картинок |
+| [tools/check_rules.mjs](tools/check_rules.mjs) | Node, Revit 2019 | `check_family_rules` с проверками профиля `proproekt` по всем файлам |
+| [tools/render_proof.py](tools/render_proof.py) | Python | изометрия и проекции с габаритами |
+| [tools/make_plan.py](tools/make_plan.py), [tools/make_report.py](tools/make_report.py) | Python | план моделирования и отчёт |
 
 Запуск без MCP-сервера: команда плагина `send_code_to_revit` с телом скрипта, `classes` из `*.classes.cs`, `usings` из шапки и `transactionMode: "none"`.
 
