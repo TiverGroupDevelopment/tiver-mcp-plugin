@@ -295,10 +295,10 @@ namespace RevitMCPCommandSet.Services
 
                     return parameter.AsValueString() ?? parameter.AsInteger().ToString();
 #else
-                    // For Revit 2022-，Code changes pending approval
+                    // For Revit 2022-, Code changes pending approval
                     if (parameter.Definition is Autodesk.Revit.DB.InternalDefinition internalDef)
                     {
-                        // 检查是否为已知的布尔类型内置参数 (仅使用Revit 2019中确认存在的参数)
+                        // Check known boolean built-in parameters (only those confirmed to exist in Revit 2019)
                         BuiltInParameter bip = internalDef.BuiltInParameter;
                         if (bip == BuiltInParameter.IS_VISIBLE_PARAM ||
                             bip == BuiltInParameter.WALL_ATTR_ROOM_BOUNDING ||
@@ -307,15 +307,14 @@ namespace RevitMCPCommandSet.Services
                             return parameter.AsInteger() == 1 ? "True" : "False";
                         }
 
-                        // 尝试通过参数名称识别布尔参数
+                        // Try to detect boolean parameters by name
                         string paramName = parameter.Definition.Name.ToLower();
-                        if (paramName.Contains("是否") ||
-                            paramName.Contains("yes/no") ||
+                        if (paramName.Contains("yes/no") ||
                             paramName.Contains("true/false") ||
                             paramName.Contains("visible") ||
                             paramName.Contains("visibility"))
                         {
-                            // 检查存储类型为整数且值为0或1
+                            // Integer storage with value 0 or 1
                             if (parameter.StorageType == StorageType.Integer)
                             {
                                 int intValue = parameter.AsInteger();
@@ -326,12 +325,12 @@ namespace RevitMCPCommandSet.Services
                             }
                         }
 
-                        // 尝试通过储存类型和值字符串识别布尔参数
+                        // Try to detect boolean parameters by storage type and value string
                         if (parameter.StorageType == StorageType.Integer)
                         {
                             string valueString = parameter.AsValueString();
                             if (!string.IsNullOrEmpty(valueString) &&
-                                (valueString == "是" || valueString == "否" ||
+                                (valueString == "Да" || valueString == "Нет" ||
                                  valueString == "Yes" || valueString == "No"))
                             {
                                 return parameter.AsInteger() == 1 ? "True" : "False";
@@ -339,7 +338,7 @@ namespace RevitMCPCommandSet.Services
                         }
                     }
 
-                    // 默认返回参数值
+                    // Default: return the parameter value
                     return parameter.AsValueString() ?? parameter.AsInteger().ToString();
                     //throw new NotImplementedException();
 #endif
