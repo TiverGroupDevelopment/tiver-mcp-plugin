@@ -1,157 +1,2322 @@
 {
   "name": "RevitMCPCommandSet",
-  "description": "Basic command collection for Revit AI assistance",
+  "description": "Все команды: код в одной сборке. К каким наборам относится команда, говорит её поле sets.",
   "developer": {
-    "name": "mcp-servers-for-revit",
+    "name": "TiverGroup",
     "email": "",
-    "website": "",
-    "organization": "mcp-servers-for-revit"
+    "website": "https://github.com/TiverGroupDevelopment/tiver-mcp-plugin",
+    "organization": "TiverGroup"
   },
+  "commandSets": [
+    {
+      "name": "Global",
+      "description": "Общие команды: пригодятся в любом проекте моделирования. Модель проекта, топография, выполнение кода, редактор семейств."
+    },
+    {
+      "name": "Alterplast",
+      "project": "alterplast",
+      "description": "Все команды, которыми пользуется проект Альтерпласт: общие команды семейств и узкие процессы проекта."
+    }
+  ],
   "commands": [
     {
       "commandName": "say_hello",
-      "description": "Displays a greeting dialog",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Показать приветственное окно (проверка связи)",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "service",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "message"
+        }
+      ]
     },
     {
       "commandName": "get_available_family_types",
-      "description": "get available family types",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Доступные типоразмеры семейств в проекте",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "categoryList"
+        },
+        {
+          "name": "familyNameFilter"
+        },
+        {
+          "name": "limit"
+        }
+      ]
     },
     {
       "commandName": "get_current_view_elements",
-      "description": "get current view elements",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Элементы текущего вида",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "modelCategoryList"
+        },
+        {
+          "name": "annotationCategoryList"
+        },
+        {
+          "name": "includeHidden"
+        },
+        {
+          "name": "limit"
+        }
+      ]
     },
     {
       "commandName": "get_current_view_info",
-      "description": "get current view info",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Сведения о текущем виде",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": []
     },
     {
       "commandName": "get_selected_elements",
-      "description": "get selected elements",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Выбранные элементы",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "limit"
+        }
+      ]
     },
     {
       "commandName": "create_point_based_element",
-      "description": "Create point-based elements like furniture",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Создать элементы по точке (мебель, оборудование)",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "data",
+          "required": true
+        }
+      ]
     },
     {
       "commandName": "create_line_based_element",
-      "description": "Create line based element such as wall",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Создать элементы по линии (стены, балки)",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "data",
+          "required": true
+        }
+      ]
     },
     {
       "commandName": "create_surface_based_element",
-      "description": "Create surface-based elements like floors",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Создать элементы по контуру (перекрытия, потолки)",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "data",
+          "required": true
+        }
+      ]
     },
     {
       "commandName": "color_splash",
-      "description": "Color elements by parameter value",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Раскрасить элементы по значению параметра",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "tool": "color_elements",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "categoryName",
+          "required": true
+        },
+        {
+          "name": "parameterName",
+          "required": true
+        },
+        {
+          "name": "useGradient"
+        },
+        {
+          "name": "customColors"
+        }
+      ]
     },
     {
       "commandName": "tag_walls",
-      "description": "Tag all the walls in the model",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Поставить марки всем стенам модели",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "tool": "tag_all_walls",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "useLeader"
+        },
+        {
+          "name": "tagTypeId"
+        }
+      ]
     },
     {
       "commandName": "delete_element",
-      "description": "Deletes elements using ElementId",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Удалить элементы по ElementId",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "elementIds",
+          "required": true
+        }
+      ]
     },
     {
       "commandName": "ai_element_filter",
-      "description": "AI element filter for querying elements by criteria",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Найти элементы по условиям (категория, параметры, область)",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "data",
+          "required": true
+        }
+      ]
     },
     {
       "commandName": "operate_element",
-      "description": "Operate on elements (select, color, hide, isolate, etc)",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Действие над элементами: выбрать, раскрасить, скрыть, изолировать",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "data",
+          "required": true
+        }
+      ]
     },
     {
       "commandName": "export_room_data",
-      "description": "Extract all rooms with detailed properties including area, volume, perimeter, and parameters",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Выгрузить помещения: площадь, объём, периметр, параметры",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "includeUnplacedRooms"
+        },
+        {
+          "name": "includeNotEnclosedRooms"
+        }
+      ]
     },
     {
       "commandName": "get_material_quantities",
-      "description": "Calculate material quantities and takeoffs with area and volume calculations per material",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Подсчёт материалов: площади и объёмы по материалам",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "categoryFilters"
+        },
+        {
+          "name": "selectedElementsOnly"
+        }
+      ]
     },
     {
       "commandName": "analyze_model_statistics",
-      "description": "Analyze model complexity with element counts by category, type, family, and level",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Статистика модели: число элементов по категориям, типам, семействам, уровням",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "includeDetailedTypes"
+        }
+      ]
     },
     {
       "commandName": "create_grid",
-      "description": "Create grid system with smart spacing generation for project layout (alphabetic/numeric naming)",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Создать сетку осей с автоматическим шагом и нумерацией",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "xCount",
+          "required": true
+        },
+        {
+          "name": "xSpacing",
+          "required": true
+        },
+        {
+          "name": "xStartLabel"
+        },
+        {
+          "name": "xNamingStyle"
+        },
+        {
+          "name": "yCount",
+          "required": true
+        },
+        {
+          "name": "ySpacing",
+          "required": true
+        },
+        {
+          "name": "yStartLabel"
+        },
+        {
+          "name": "yNamingStyle"
+        },
+        {
+          "name": "xExtentMin"
+        },
+        {
+          "name": "xExtentMax"
+        },
+        {
+          "name": "yExtentMin"
+        },
+        {
+          "name": "yExtentMax"
+        },
+        {
+          "name": "elevation"
+        },
+        {
+          "name": "xStartPosition"
+        },
+        {
+          "name": "yStartPosition"
+        }
+      ]
     },
     {
       "commandName": "create_structural_framing_system",
-      "description": "Create structural beam framing system with configurable spacing and direction",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Создать систему балок с заданным шагом и направлением",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "levelName",
+          "required": true
+        },
+        {
+          "name": "xMin",
+          "required": true
+        },
+        {
+          "name": "xMax",
+          "required": true
+        },
+        {
+          "name": "yMin",
+          "required": true
+        },
+        {
+          "name": "yMax",
+          "required": true
+        },
+        {
+          "name": "spacing",
+          "required": true
+        },
+        {
+          "name": "directionEdge"
+        },
+        {
+          "name": "layoutRule"
+        },
+        {
+          "name": "justify"
+        },
+        {
+          "name": "beamTypeName"
+        },
+        {
+          "name": "elevation"
+        },
+        {
+          "name": "is3d"
+        }
+      ]
     },
     {
       "commandName": "create_room",
-      "description": "Create and place rooms at specified locations with custom names, numbers, and properties",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Создать помещения в точках с именами, номерами и свойствами",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "data",
+          "required": true
+        }
+      ]
     },
     {
       "commandName": "tag_rooms",
-      "description": "Create tags for all rooms in the current view displaying room name and number",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Поставить марки всем помещениям текущего вида",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "tool": "tag_all_rooms",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "useLeader"
+        },
+        {
+          "name": "tagTypeId"
+        },
+        {
+          "name": "roomIds"
+        }
+      ]
     },
     {
       "commandName": "create_level",
-      "description": "Create levels at specified elevations with automatic floor plan view generation",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Создать уровни на отметках и их планы этажей",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "data",
+          "required": true
+        }
+      ]
     },
     {
       "commandName": "send_code_to_revit",
-      "description": "Execute dynamic C# code in Revit with access to the Document and Revit API",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Выполнить C#-код в Revit с доступом к документу и Revit API",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "code",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "code",
+          "required": true
+        },
+        {
+          "name": "parameters"
+        },
+        {
+          "name": "classes"
+        },
+        {
+          "name": "usings"
+        },
+        {
+          "name": "transactionMode"
+        },
+        {
+          "name": "suppressFailures"
+        }
+      ]
     },
     {
       "commandName": "create_dimensions",
-      "description": "Create dimension annotations between elements or points in the current view",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Создать размеры между элементами или точками на текущем виде",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "dimensions",
+          "required": true
+        }
+      ]
     },
     {
       "commandName": "get_topography",
-      "description": "List topography surfaces and toposolids with points, elevations and areas",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Топоповерхности и топотела: точки, отметки, площади",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "topography",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "elementId"
+        },
+        {
+          "name": "includePoints"
+        },
+        {
+          "name": "maxPoints"
+        }
+      ]
     },
     {
       "commandName": "create_topography",
-      "description": "Create a topography surface or toposolid from survey points",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Создать топоповерхность или топотело по точкам съёмки",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "topography",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "points",
+          "required": true
+        },
+        {
+          "name": "kind"
+        },
+        {
+          "name": "material"
+        },
+        {
+          "name": "typeName"
+        },
+        {
+          "name": "levelName"
+        },
+        {
+          "name": "boundary"
+        }
+      ]
     },
     {
       "commandName": "edit_topography_points",
-      "description": "Add, delete or change elevation of topography points",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Добавить, удалить или изменить отметки точек рельефа",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "topography",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "elementId"
+        },
+        {
+          "name": "delete"
+        },
+        {
+          "name": "add"
+        },
+        {
+          "name": "setElevation"
+        },
+        {
+          "name": "toleranceMm"
+        }
+      ]
     },
     {
       "commandName": "create_topography_subregion",
-      "description": "Create a site subregion or toposolid subdivision",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Создать подобласть рельефа или подразделение топотела",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "topography",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "elementId"
+        },
+        {
+          "name": "boundary",
+          "required": true
+        },
+        {
+          "name": "material"
+        },
+        {
+          "name": "typeName"
+        }
+      ]
     },
     {
       "commandName": "get_topography_elevation",
-      "description": "Get terrain elevation at plan points",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Отметка рельефа в точках плана",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "topography",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "points",
+          "required": true
+        },
+        {
+          "name": "elementId"
+        }
+      ]
     },
     {
       "commandName": "convert_topography_to_toposolid",
-      "description": "Convert a topography surface to a toposolid (Revit 2024+)",
-      "assemblyPath": "RevitMCPCommandSet.dll"
+      "description": "Преобразовать топоповерхность в топотело (Revit 2024+)",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "topography",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "elementId"
+        },
+        {
+          "name": "typeName"
+        },
+        {
+          "name": "levelName"
+        },
+        {
+          "name": "deleteSource"
+        }
+      ]
+    },
+    {
+      "commandName": "get_family_parameters",
+      "description": "Прочитать параметры семейства, формулы и значения по типоразмерам",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "parameters",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "nameFilter"
+        },
+        {
+          "name": "typeName"
+        },
+        {
+          "name": "includeBuiltIn"
+        }
+      ]
+    },
+    {
+      "commandName": "add_family_parameters",
+      "description": "Добавить параметры семейства (пакетом) со значениями и формулами",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "parameters",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "parameters",
+          "required": true
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "set_family_parameter_values",
+      "description": "Задать значения параметров для текущего, выбранных или всех типоразмеров",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "parameters",
+      "status": "experimental",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "values",
+          "required": true
+        },
+        {
+          "name": "typeNames"
+        },
+        {
+          "name": "allTypes"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "set_family_parameter_formulas",
+      "description": "Задать или снять формулы параметров",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "parameters",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "formulas",
+          "required": true
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "add_family_type",
+      "description": "Создать типоразмер, при необходимости копией другого",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "parameters",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "name",
+          "required": true
+        },
+        {
+          "name": "baseType"
+        },
+        {
+          "name": "values"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "get_family_geometry",
+      "description": "Формы, опорные плоскости, уровни и материалы семейства",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "geometry",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "detail"
+        },
+        {
+          "name": "elementIds"
+        },
+        {
+          "name": "formsOnly"
+        },
+        {
+          "name": "includeProfile"
+        },
+        {
+          "name": "faces"
+        },
+        {
+          "name": "faceNormal"
+        },
+        {
+          "name": "faceOffset"
+        }
+      ]
+    },
+    {
+      "commandName": "create_family_extrusion",
+      "description": "Создать выдавливание (тело или пустоту)",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "geometry",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "workPlane"
+        },
+        {
+          "name": "profile",
+          "required": true
+        },
+        {
+          "name": "start"
+        },
+        {
+          "name": "end",
+          "required": true
+        },
+        {
+          "name": "isSolid"
+        },
+        {
+          "name": "material"
+        },
+        {
+          "name": "cutIntersectingSolids"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "create_family_blend",
+      "description": "Создать форму по сечениям (тело или пустоту)",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "geometry",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "workPlane"
+        },
+        {
+          "name": "baseProfile",
+          "required": true
+        },
+        {
+          "name": "topProfile",
+          "required": true
+        },
+        {
+          "name": "height",
+          "required": true
+        },
+        {
+          "name": "isSolid"
+        },
+        {
+          "name": "material"
+        },
+        {
+          "name": "cutIntersectingSolids"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "create_family_revolution",
+      "description": "Создать тело вращения (тело или пустоту)",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "geometry",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "workPlane"
+        },
+        {
+          "name": "profile",
+          "required": true
+        },
+        {
+          "name": "axis",
+          "required": true
+        },
+        {
+          "name": "startAngle"
+        },
+        {
+          "name": "endAngle"
+        },
+        {
+          "name": "isSolid"
+        },
+        {
+          "name": "material"
+        },
+        {
+          "name": "cutIntersectingSolids"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "associate_family_parameters",
+      "description": "Связать параметры форм с параметрами семейства",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "parameters",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "associations",
+          "required": true
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "save_family",
+      "description": "Сохранить семейство или сохранить как .rfa",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "session",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "path"
+        },
+        {
+          "name": "overwrite"
+        }
+      ]
+    },
+    {
+      "commandName": "list_family_templates",
+      "description": "Шаблоны семейств (.rft) из папки шаблонов Revit",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "session",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "filter"
+        },
+        {
+          "name": "inspect"
+        },
+        {
+          "name": "category"
+        }
+      ]
+    },
+    {
+      "commandName": "new_family",
+      "description": "Создать семейство по шаблону и закрепить как сессию редактирования",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "session",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "template",
+          "required": true
+        },
+        {
+          "name": "savePath"
+        },
+        {
+          "name": "overwrite"
+        },
+        {
+          "name": "typeName"
+        }
+      ]
+    },
+    {
+      "commandName": "open_family",
+      "description": "Открыть семейство (.rfa, из проекта или активный документ) как сессию",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "session",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "path"
+        },
+        {
+          "name": "familyName"
+        }
+      ]
+    },
+    {
+      "commandName": "close_family",
+      "description": "Завершить сессию: сохранить, загрузить в проект, закрыть",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "session",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "save"
+        },
+        {
+          "name": "savePath"
+        },
+        {
+          "name": "overwrite"
+        },
+        {
+          "name": "loadIntoProject"
+        },
+        {
+          "name": "overwriteProjectValues"
+        },
+        {
+          "name": "discardChanges"
+        },
+        {
+          "name": "keepOpen"
+        }
+      ]
+    },
+    {
+      "commandName": "create_family_reference_planes",
+      "description": "Создать именованные опорные плоскости",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "planes",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "planes",
+          "required": true
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "create_family_dimensions",
+      "description": "Создать размеры, при необходимости с параметром семейства",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "planes",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "dimensions",
+          "required": true
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "align_family_elements",
+      "description": "Привязать грани форм к опорным плоскостям или уровням",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "planes",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "alignments",
+          "required": true
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "lock_family_sketch",
+      "description": "Привязать линии эскизов и оси вращения к опорным плоскостям",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "planes",
+      "status": "experimental",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "forms",
+          "required": true
+        },
+        {
+          "name": "toleranceMm"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "modify_family_form",
+      "description": "Изменить форму: границы, углы, тело/пустота, видимость, материал",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "geometry",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "elementId",
+          "required": true
+        },
+        {
+          "name": "start"
+        },
+        {
+          "name": "end"
+        },
+        {
+          "name": "bottom"
+        },
+        {
+          "name": "top"
+        },
+        {
+          "name": "startAngle"
+        },
+        {
+          "name": "endAngle"
+        },
+        {
+          "name": "isSolid"
+        },
+        {
+          "name": "visible"
+        },
+        {
+          "name": "material"
+        },
+        {
+          "name": "cutIntersectingSolids"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "delete_family_elements",
+      "description": "Удалить формы, опорные плоскости, размеры или линии",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "geometry",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "elementIds",
+          "required": true
+        },
+        {
+          "name": "force"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "transform_family_elements",
+      "description": "Переместить, скопировать, повернуть или отразить элементы",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "geometry",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "elementIds",
+          "required": true
+        },
+        {
+          "name": "move"
+        },
+        {
+          "name": "copy"
+        },
+        {
+          "name": "rotate"
+        },
+        {
+          "name": "mirror"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "create_family_sweep",
+      "description": "Создать сдвиг по траектории (тело или пустоту)",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "geometry",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "workPlane"
+        },
+        {
+          "name": "path",
+          "required": true
+        },
+        {
+          "name": "profile",
+          "required": true
+        },
+        {
+          "name": "profileLocation"
+        },
+        {
+          "name": "profileCurveIndex"
+        },
+        {
+          "name": "isSolid"
+        },
+        {
+          "name": "material"
+        },
+        {
+          "name": "cutIntersectingSolids"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "create_family_swept_blend",
+      "description": "Создать сдвиг по сечениям (тело или пустоту)",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "geometry",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "workPlane"
+        },
+        {
+          "name": "path",
+          "required": true
+        },
+        {
+          "name": "bottomProfile",
+          "required": true
+        },
+        {
+          "name": "topProfile",
+          "required": true
+        },
+        {
+          "name": "isSolid"
+        },
+        {
+          "name": "material"
+        },
+        {
+          "name": "cutIntersectingSolids"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "capture_family_view",
+      "description": "Снимок вида семейства в PNG",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "checks",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "view"
+        },
+        {
+          "name": "direction"
+        },
+        {
+          "name": "style"
+        },
+        {
+          "name": "hideDatums"
+        },
+        {
+          "name": "showConnectors"
+        },
+        {
+          "name": "pixels"
+        }
+      ]
+    },
+    {
+      "commandName": "get_family_properties",
+      "description": "Прочитать категорию и свойства семейства",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "parameters",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        }
+      ]
+    },
+    {
+      "commandName": "set_family_properties",
+      "description": "Изменить категорию и свойства семейства",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "parameters",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "category"
+        },
+        {
+          "name": "partType"
+        },
+        {
+          "name": "workPlaneBased"
+        },
+        {
+          "name": "alwaysVertical"
+        },
+        {
+          "name": "shared"
+        },
+        {
+          "name": "roomCalculationPoint"
+        },
+        {
+          "name": "cutWithVoidsWhenLoaded"
+        },
+        {
+          "name": "omniClassNumber"
+        },
+        {
+          "name": "omniClassTitle"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "create_family_lines",
+      "description": "Нарисовать линии модели или символьные линии",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "geometry",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "kind"
+        },
+        {
+          "name": "workPlane"
+        },
+        {
+          "name": "path",
+          "required": true
+        },
+        {
+          "name": "subcategory"
+        },
+        {
+          "name": "visibility"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "create_family_subcategories",
+      "description": "Создать или изменить подкатегории семейства",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "graphics",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "subcategories",
+          "required": true
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "set_family_element_graphics",
+      "description": "Задать подкатегорию и видимость элементов",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "graphics",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "elementIds",
+          "required": true
+        },
+        {
+          "name": "subcategory"
+        },
+        {
+          "name": "visibility"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "create_family_materials",
+      "description": "Создать или изменить материалы в семействе",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "graphics",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "materials",
+          "required": true
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "load_nested_family",
+      "description": "Загрузить .rfa как вложенное семейство",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "nested",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "path",
+          "required": true
+        },
+        {
+          "name": "overwriteParameterValues"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "place_family_instance",
+      "description": "Разместить экземпляр вложенного семейства",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "nested",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "nestedFamily",
+          "required": true
+        },
+        {
+          "name": "type"
+        },
+        {
+          "name": "location"
+        },
+        {
+          "name": "rotation"
+        },
+        {
+          "name": "level"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "load_family_into_project",
+      "description": "Загрузить редактируемое семейство в открытый проект",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "placement",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "project"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "create_family_opening",
+      "description": "Вырезать проём в основе семейства на основе",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "geometry",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "hostId"
+        },
+        {
+          "name": "workPlane"
+        },
+        {
+          "name": "profile",
+          "required": true
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "create_family_connector",
+      "description": "Добавить MEP-коннектор на грань формы",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "mep",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "domain",
+          "required": true
+        },
+        {
+          "name": "face",
+          "required": true
+        },
+        {
+          "name": "systemType"
+        },
+        {
+          "name": "shape"
+        },
+        {
+          "name": "diameter"
+        },
+        {
+          "name": "width"
+        },
+        {
+          "name": "height"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "add_family_shared_parameters",
+      "description": "Добавить общие параметры из ФОП",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "parameters",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "sharedParameterFile"
+        },
+        {
+          "name": "parameters",
+          "required": true
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "update_family_parameters",
+      "description": "Переименовать параметры, сменить тип, сделать отчётными или удалить",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "parameters",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "parameters",
+          "required": true
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "export_family_type_catalog",
+      "description": "Выгрузить каталог типоразмеров (.txt)",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "lookup",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "path"
+        },
+        {
+          "name": "overwrite"
+        },
+        {
+          "name": "parameters"
+        }
+      ]
+    },
+    {
+      "commandName": "export_family_lookup_tables",
+      "description": "Выгрузить таблицы выбора в CSV из папки .rfa (пакетно)",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "lookup",
+      "status": "experimental",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "folder"
+        },
+        {
+          "name": "paths"
+        },
+        {
+          "name": "recursive"
+        },
+        {
+          "name": "exclude"
+        },
+        {
+          "name": "outDir"
+        },
+        {
+          "name": "encoding"
+        },
+        {
+          "name": "overwrite"
+        }
+      ]
+    },
+    {
+      "commandName": "manage_family_lookup_tables",
+      "description": "Таблицы выбора: список, импорт, экспорт, удаление",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "lookup",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "action"
+        },
+        {
+          "name": "name"
+        },
+        {
+          "name": "path"
+        },
+        {
+          "name": "overwrite"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "test_family_flex",
+      "description": "Проверить гибкость: перебрать значения параметров и найти ошибки, не меняя семейство",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "checks",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "cases",
+          "required": true
+        }
+      ]
+    },
+    {
+      "commandName": "create_family_array",
+      "description": "Создать линейный или круговой массив",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "geometry",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "elementIds",
+          "required": true
+        },
+        {
+          "name": "count",
+          "required": true
+        },
+        {
+          "name": "translation"
+        },
+        {
+          "name": "radial"
+        },
+        {
+          "name": "anchor"
+        },
+        {
+          "name": "countParameter"
+        },
+        {
+          "name": "view"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "purge_family_unused",
+      "description": "Удалить неиспользуемые элементы (Revit 2024+)",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "session",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "dryRun"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "checkpoint_family",
+      "description": "Сохранить точку отката сессии семейства",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "session",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "label"
+        }
+      ]
+    },
+    {
+      "commandName": "restore_family_checkpoint",
+      "description": "Откатить сессию семейства к точке отката",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "session",
+      "status": "validated",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "id"
+        }
+      ]
+    },
+    {
+      "commandName": "list_project_families",
+      "description": "Семейства проекта: категории, типоразмеры, число экземпляров",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "placement",
+      "status": "experimental",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "project"
+        },
+        {
+          "name": "nameFilter"
+        },
+        {
+          "name": "category"
+        },
+        {
+          "name": "includeNonEditable"
+        }
+      ]
+    },
+    {
+      "commandName": "place_family_in_project",
+      "description": "Разместить экземпляр семейства в проекте по имени, типу и уровню",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "placement",
+      "status": "experimental",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "family"
+        },
+        {
+          "name": "path"
+        },
+        {
+          "name": "type"
+        },
+        {
+          "name": "level"
+        },
+        {
+          "name": "location"
+        },
+        {
+          "name": "rotation"
+        },
+        {
+          "name": "project"
+        },
+        {
+          "name": "select"
+        },
+        {
+          "name": "show"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "open_family_in_editor",
+      "description": "Открыть семейство во вкладке редактора и настроить вид",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "session",
+      "status": "experimental",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "path"
+        },
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "save"
+        },
+        {
+          "name": "view"
+        },
+        {
+          "name": "isometric"
+        },
+        {
+          "name": "zoom"
+        }
+      ]
+    },
+    {
+      "commandName": "create_family_model_text",
+      "description": "Создать объёмный текст модели",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "geometry",
+      "status": "experimental",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "text",
+          "required": true
+        },
+        {
+          "name": "workPlane"
+        },
+        {
+          "name": "position"
+        },
+        {
+          "name": "align"
+        },
+        {
+          "name": "heightMm"
+        },
+        {
+          "name": "font"
+        },
+        {
+          "name": "depthMm"
+        },
+        {
+          "name": "material"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "get_family_mass",
+      "description": "Масса семейства по объёмам форм и плотности материалов",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "checks",
+      "status": "experimental",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "densityKgM3"
+        },
+        {
+          "name": "writeParameter"
+        },
+        {
+          "name": "unit"
+        },
+        {
+          "name": "allTypes"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "diagnose_revit",
+      "description": "Состояние Revit: окна, документы, сессия семейства, апдейтеры",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "revit",
+      "status": "experimental",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": []
+    },
+    {
+      "commandName": "dismiss_revit_dialog",
+      "description": "Прочитать или закрыть окно Revit, которое блокирует команды",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "revit",
+      "status": "experimental",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "listOnly"
+        },
+        {
+          "name": "button"
+        },
+        {
+          "name": "handle"
+        },
+        {
+          "name": "all"
+        }
+      ]
+    },
+    {
+      "commandName": "check_family_rules",
+      "description": "Проверить семейство по профилю правил",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "checks",
+      "status": "experimental",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "profile"
+        },
+        {
+          "name": "path"
+        },
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "only"
+        }
+      ]
+    },
+    {
+      "commandName": "setup_family_connectors",
+      "description": "Связать коннекторы, задать главный, классификацию систем и ось Y вверх",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "mep",
+      "status": "experimental",
+      "sets": [
+        "Global",
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "link"
+        },
+        {
+          "name": "autoLink"
+        },
+        {
+          "name": "primary"
+        },
+        {
+          "name": "systemClassification"
+        },
+        {
+          "name": "flip"
+        },
+        {
+          "name": "orientUp"
+        },
+        {
+          "name": "up"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "create_family_inspection_copy",
+      "description": "Копия семейства с габаритными размерами для инспектора",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "checks",
+      "status": "experimental",
+      "sets": [
+        "Alterplast"
+      ],
+      "parameters": [
+        {
+          "name": "path"
+        },
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "targetPath"
+        },
+        {
+          "name": "overwrite"
+        },
+        {
+          "name": "open"
+        },
+        {
+          "name": "offsetMm"
+        }
+      ]
     }
   ]
 }

@@ -1,0 +1,270 @@
+{
+  "name": "RevitMCPServerTools",
+  "description": "Tools implemented in the MCP server itself, without a C# command of the same name",
+  "commands": [
+    {
+      "commandName": "create_family_lathe_profile",
+      "description": "Тело вращения по списку диаметров вдоль оси (на основе create_family_revolution)",
+      "section": "geometry",
+      "status": "validated",
+      "uses": [
+        "create_family_revolution"
+      ],
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "sections",
+          "required": true
+        },
+        {
+          "name": "bore"
+        },
+        {
+          "name": "baseZ"
+        },
+        {
+          "name": "material"
+        },
+        {
+          "name": "isSolid"
+        },
+        {
+          "name": "cutIntersectingSolids"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "get_family_rules",
+      "description": "Правила профиля со всеми унаследованными слоями",
+      "section": "checks",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "profile"
+        },
+        {
+          "name": "section"
+        },
+        {
+          "name": "includeText"
+        }
+      ]
+    },
+    {
+      "commandName": "list_family_rule_profiles",
+      "description": "Профили правил: общие, пакеты, проекты",
+      "section": "checks",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": []
+    },
+    {
+      "commandName": "list_command_sets",
+      "description": "Каталог команд: наборы, категории, статусы",
+      "section": "service",
+      "status": "experimental",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "set"
+        },
+        {
+          "name": "section"
+        },
+        {
+          "name": "status"
+        }
+      ]
+    },
+    {
+      "commandName": "launch_revit",
+      "description": "Запустить Revit с сервером MCP и дождаться ответа",
+      "section": "revit",
+      "status": "experimental",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "version",
+          "required": true
+        },
+        {
+          "name": "file"
+        },
+        {
+          "name": "reuse"
+        },
+        {
+          "name": "language"
+        },
+        {
+          "name": "waitSeconds"
+        }
+      ]
+    },
+    {
+      "commandName": "list_revit_instances",
+      "description": "Запущенные Revit с сервером MCP: порт, версия, документы",
+      "section": "revit",
+      "status": "experimental",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "details"
+        }
+      ]
+    },
+    {
+      "commandName": "use_revit_instance",
+      "description": "Переключить сессию на другой запущенный Revit",
+      "section": "revit",
+      "status": "experimental",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "port"
+        },
+        {
+          "name": "version"
+        }
+      ]
+    },
+    {
+      "commandName": "list_project_scripts",
+      "description": "Сохранённые скрипты проекта для send_code_to_revit",
+      "section": "code",
+      "status": "experimental",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "project"
+        }
+      ]
+    },
+    {
+      "commandName": "run_project_script",
+      "description": "Выполнить сохранённый скрипт проекта в Revit",
+      "section": "code",
+      "status": "experimental",
+      "uses": [
+        "send_code_to_revit"
+      ],
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "name",
+          "required": true
+        },
+        {
+          "name": "parameters"
+        },
+        {
+          "name": "project"
+        },
+        {
+          "name": "suppressFailures"
+        }
+      ]
+    },
+    {
+      "commandName": "store_project_data",
+      "description": "Сохранить данные проекта в локальную базу",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "project_name",
+          "required": true
+        },
+        {
+          "name": "project_path"
+        },
+        {
+          "name": "project_number"
+        },
+        {
+          "name": "project_address"
+        },
+        {
+          "name": "client_name"
+        },
+        {
+          "name": "project_status"
+        },
+        {
+          "name": "author"
+        },
+        {
+          "name": "metadata"
+        }
+      ]
+    },
+    {
+      "commandName": "store_room_data",
+      "description": "Сохранить данные помещений в локальную базу",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "project_name",
+          "required": true
+        },
+        {
+          "name": "rooms",
+          "required": true
+        }
+      ]
+    },
+    {
+      "commandName": "query_stored_data",
+      "description": "Запросить сохранённые данные проекта и помещений",
+      "section": "project",
+      "status": "validated",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "query_type",
+          "required": true
+        },
+        {
+          "name": "project_id"
+        },
+        {
+          "name": "project_name"
+        }
+      ]
+    }
+  ]
+}

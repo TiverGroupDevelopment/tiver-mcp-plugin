@@ -87,6 +87,8 @@
         <ItemGroup>
             <CommandSetBinaries Include="$(TargetDir)*.dll;$(TargetDir)*.pdb" />
             <CommandJsonFile Include="$(ProjectDir)..\command.json" />
+            <!-- Названия и порядок категорий команд для окна настроек плагина -->
+            <CommandJsonFile Include="$(ProjectDir)..\sections.json" />
         </ItemGroup>
 
         <!-- Always: Copy to plugin's AddIn output for release packaging -->
