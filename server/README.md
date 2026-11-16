@@ -1,75 +1,35 @@
-# mcp-server-for-revit
+# tiver-mcp-server
 
-MCP server for interacting with Autodesk Revit through AI assistants like Claude.
+MCP-сервер проекта [tiver-mcp-plugin](../README.md): каталог инструментов Revit для агента Claude.
 
-This package is the MCP server component of [mcp-servers-for-revit](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit). It exposes Revit operations as MCP tools that AI clients can call. The server communicates with the [Revit plugin](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit) over WebSocket to execute commands inside Revit.
+Сервер объявляет инструменты (описания и схемы аргументов), пересылает их вызовы плагину Revit по JSON-RPC через TCP `127.0.0.1:8080`, собирает правила моделирования семейств из `rules/` и запускает Revit (`launch_revit`). Без плагина, установленного в Revit, инструменты Revit не работают — установка описана в [README проекта](../README.md).
 
-> [!NOTE]
-> This server requires the mcp-servers-for-revit Revit plugin to be installed and running inside Revit. See the [full project README](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit) for setup instructions.
-
-## Setup
-
-**Claude Code**
+## Сборка
 
 ```bash
-claude mcp add mcp-server-for-revit -- npx -y mcp-server-for-revit
-```
-
-**Claude Desktop**
-
-Claude Desktop → Settings → Developer → Edit Config → `claude_desktop_config.json`:
-
-```json
-{
-    "mcpServers": {
-        "mcp-server-for-revit": {
-            "command": "npx",
-            "args": ["-y", "mcp-server-for-revit"]
-        }
-    }
-}
-```
-
-Restart Claude Desktop. When you see the hammer icon, the MCP server is connected.
-
-## Supported Tools
-
-| Tool | Description |
-| ---- | ----------- |
-| `get_current_view_info` | Get current active view info |
-| `get_current_view_elements` | Get elements from the current active view |
-| `get_available_family_types` | Get available family types in current project |
-| `get_selected_elements` | Get currently selected elements |
-| `get_material_quantities` | Calculate material quantities and takeoffs |
-| `ai_element_filter` | Intelligent element querying tool for AI assistants |
-| `analyze_model_statistics` | Analyze model complexity with element counts |
-| `create_point_based_element` | Create point-based elements (door, window, furniture) |
-| `create_line_based_element` | Create line-based elements (wall, beam, pipe) |
-| `create_surface_based_element` | Create surface-based elements (floor, ceiling, roof) |
-| `create_grid` | Create a grid system with smart spacing generation |
-| `create_level` | Create levels at specified elevations |
-| `create_room` | Create and place rooms at specified locations |
-| `create_dimensions` | Create dimension annotations in the current view |
-| `create_structural_framing_system` | Create a structural beam framing system |
-| `delete_element` | Delete elements by ID |
-| `operate_element` | Operate on elements (select, setColor, hide, etc.) |
-| `color_elements` | Color elements based on a parameter value |
-| `tag_all_walls` | Tag all walls in the current view |
-| `tag_all_rooms` | Tag all rooms in the current view |
-| `export_room_data` | Export all room data from the project |
-| `store_project_data` | Store project metadata in local database |
-| `store_room_data` | Store room metadata in local database |
-| `query_stored_data` | Query stored project and room data |
-| `send_code_to_revit` | Send C# code to Revit to execute |
-| `say_hello` | Display a greeting dialog in Revit (connection test) |
-
-## Development
-
-```bash
-npm install
+npm ci
 npm run build
 ```
 
-## License
+Результат — `build/index.js`. Claude Code запускает его по [.mcp.json](../.mcp.json) в корне репозитория.
 
-[MIT](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit/blob/main/LICENSE)
+## Где что лежит
+
+| Папка | Что |
+|---|---|
+| `src/tools/` | инструменты: один файл — один инструмент, подключаются автоматически |
+| `src/utils/` | связь с плагином, каталог команд, правила, экземпляры Revit, скрипты проектов |
+| `command.json` | инструменты, реализованные в самом сервере: наборы, категории, параметры |
+
+## Переменные окружения
+
+| Переменная | Что задаёт |
+|---|---|
+| `REVIT_HOST`, `REVIT_PORT` | Revit по умолчанию (`127.0.0.1:8080`) |
+| `REVIT_MCP_DATA_DIR` | папка исходных данных проектов (эталоны в профилях правил) |
+| `REVIT_INSTALL_ROOT` | папка установки Revit, если не `C:\Program Files\Autodesk` |
+| `FAMILY_RULES_DIR` | папка профилей правил, если не `rules/` репозитория |
+
+## Лицензия
+
+[MIT](../LICENSE)

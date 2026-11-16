@@ -1,311 +1,217 @@
-[![Cover Image](./assets/cover.png?v=2)](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit)
+# tiver-mcp-plugin
 
-# mcp-servers-for-revit
+**Агент Claude работает в Autodesk Revit: создаёт и правит семейства, работает с моделью проекта, проверяет результат по правилам проекта.**
 
-**Connect AI assistants to Autodesk Revit via the Model Context Protocol.**
+Связь идёт через MCP (Model Context Protocol). Агент получает от MCP-сервера каталог инструментов — команд Revit — и вызывает их. Плагин внутри Revit выполняет команды через Revit API. Основная задача команды TiverGroup — моделирование серий семейств (арматура, фитинги, коллекторы) по исходным данным заказчика и правилам проекта.
 
-mcp-servers-for-revit enables AI clients like Claude, Cline, and other MCP-compatible tools to read, create, modify, and delete elements in Revit projects. It consists of three components: a TypeScript MCP server that exposes tools to AI, a C# Revit add-in that bridges commands into Revit, and a command set that implements the actual Revit API operations.
-
-> [!NOTE]
-> This is a fork of the original [revit-mcp](https://github.com/mcp-servers-for-revit/revit-mcp) project with additional tools and functionality improvements.
-
-## Architecture
+## Как устроено
 
 ```mermaid
 flowchart LR
-    Client["MCP Client<br/>(Claude, Cline, etc.)"]
-    Server["MCP Server<br/><code>server/</code>"]
-    Plugin["Revit Plugin<br/><code>plugin/</code>"]
-    CommandSet["Command Set<br/><code>commandset/</code>"]
+    Agent["Claude Code<br/>(агент)"]
+    Server["MCP-сервер<br/><code>server/</code>"]
+    Plugin["Плагин Revit<br/><code>plugin/</code>"]
+    Commands["Команды<br/><code>commandset/</code>"]
+    Rules["Правила<br/><code>rules/</code>"]
     Revit["Revit API"]
 
-    Client <-->|stdio| Server
-    Server <-->|WebSocket| Plugin
-    Plugin -->|loads| CommandSet
-    CommandSet -->|executes| Revit
+    Agent <-->|"MCP, stdio"| Server
+    Server <-->|"JSON-RPC, TCP 127.0.0.1:8080"| Plugin
+    Plugin -->|"загружает"| Commands
+    Commands -->|"ExternalEvent"| Revit
+    Server -.->|"читает"| Rules
 ```
 
-The **MCP Server** (TypeScript) translates tool calls from AI clients into WebSocket messages. The **Revit Plugin** (C#) runs inside Revit, listens for those messages, and dispatches them to the **Command Set** (C#), which executes the actual Revit API operations and returns results back up the chain.
+| Часть | Что делает |
+|---|---|
+| MCP-сервер (TypeScript, `server/`) | Каталог инструментов для агента: описания и схемы аргументов. Пересылает вызовы в Revit, собирает правила моделирования, запускает Revit. |
+| Плагин (C#, `plugin/`) | Надстройка Revit. Слушает порт только на `127.0.0.1`, находит команду по имени и передаёт её в главный поток Revit. |
+| Команды (C#, `commandset/`) | Работа с Revit API: редактор семейств (`commandset/Family/`), модель проекта, топография, выполнение кода. Одна сборка `RevitMCPCommandSet.dll`. |
+| Правила (`rules/`) | Профили правил моделирования: общие, пакеты (ADSK), проекты. Наследуются через `extends`. |
 
-## Requirements
+## Возможности
 
-- **Node.js 18+** (for the MCP server)
-- **Autodesk Revit 2020 - 2026** (any supported version)
+- **97 инструментов**: 85 команд Revit и 12 инструментов самого сервера.
+- **Редактор семейств.** Создание по шаблону, формы (выдавливание, вращение, сдвиг, по сечениям), опорные плоскости и размеры с параметрами, параметры и формулы, таблицы выбора, коннекторы MEP, вложенные семейства, материалы, проверка гибкости. Работа идёт в закреплённой сессии: семейство открыто, пока его не закроют.
+- **Правила моделирования.** `get_family_rules` отдаёт агенту правила профиля со всеми слоями, `check_family_rules` проверяет семейство: pass / warn / fail по каждому правилу и список правил для ручной проверки.
+- **Запуск Revit агентом.** `launch_revit` поднимает Revit нужной версии с включённым сервером, без кнопок и без открытого документа. Несколько Revit одновременно — `list_revit_instances`, `use_revit_instance`.
+- **Наборы команд.** Global — общие команды, наборы проектов (Alterplast) — то, чем пользуется проект. Окно Settings плагина показывает команды по наборам и категориям.
+- **Скрипты проекта.** Удачный код для `send_code_to_revit` сохраняется в `projects/<проект>/scripts/` и запускается по имени, без сборки.
 
-## Quick Start (Using a Release)
+## Требования
 
-1. Download the ZIP for your Revit version from the [Releases](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit/releases) page (e.g., `mcp-servers-for-revit-v1.0.0-Revit2025.zip`)
+| Что | Версия |
+|---|---|
+| Windows | 10 / 11 |
+| Autodesk Revit | 2019–2026 (основная рабочая — 2019) |
+| Node.js | 20+ |
+| .NET SDK | 8 (сборка всех версий; для 2019–2024 нужен также .NET Framework 4.8 Developer Pack) |
+| Claude Code | приложение или CLI |
 
-2. Extract the ZIP and copy the contents to your Revit addins folder:
+## Быстрый старт для разработчика
+
+1. **Склонировать** репозиторий и собрать сервер:
+
+   ```bash
+   git clone https://github.com/TiverGroupDevelopment/tiver-mcp-plugin.git
+   cd tiver-mcp-plugin
+   npm --prefix server ci
+   npm --prefix server run build
    ```
-   %AppData%\Autodesk\Revit\Addins\<your Revit version>\
-   ```
-   After copying you should have:
-   ```
-   Addins/2025/
-   ├── mcp-servers-for-revit.addin
-   └── revit_mcp_plugin/
-       ├── RevitMCPPlugin.dll
-       ├── ...
-       └── Commands/
-           ├── RevitMCPCommandSet/
-           │   ├── command.json
-           │   └── 2025/
-           │       ├── RevitMCPCommandSet.dll
-           │       └── ...
-           └── RevitMCPFamilyCommandSet/
-               ├── command.json
-               └── 2025/
-                   ├── RevitMCPFamilyCommandSet.dll
-                   └── ...
+
+2. **Собрать плагин и команды** под свою версию Revit (пример — 2019):
+
+   ```bash
+   dotnet build tiver-mcp-plugin.sln -c "Release R19"
    ```
 
-3. Configure the MCP server in your AI client (see [MCP Server Setup](#mcp-server-setup))
+   Конфигурации: `Release R19` … `Release R26`. Результат — `plugin/bin/AddIn <год> <конфигурация>/`.
 
-4. Start Revit — if prompted about an unknown add-in, click **Always Load**
+3. **Установить** (Revit этой версии должен быть закрыт):
 
-5. In Revit, click the **Settings** button on the mcp-servers-for-revit ribbon tab, enable the commands you want to use, and click **Save**
+   ```powershell
+   .\scripts\install-local.ps1 -Year 2019
+   ```
 
-## MCP Server Setup
+   Скрипт копирует плагин и команды в `%APPDATA%\Autodesk\Revit\Addins\<год>\`, делает резервную копию прежней установки и пересобирает реестр команд.
 
-The MCP server is published as an npm package and can be run directly with `npx`.
+4. **Открыть Claude Code в корне репозитория.** MCP-сервер `revit-local` подключается из [.mcp.json](.mcp.json) — подтвердите доверие к нему при первом запуске.
 
-**Claude Code**
+5. **Указать папку исходных данных** (эталонные семейства из профилей правил) в `.claude/settings.local.json` — файл не попадает в git:
 
-Run this in a **terminal** (not inside Claude Code):
+   ```json
+   { "env": { "REVIT_MCP_DATA_DIR": "D:\\Семейства" } }
+   ```
 
-```bash
-claude mcp add mcp-server-for-revit -- cmd /c npx -y mcp-server-for-revit
-```
+6. **Попросить агента:** «Запусти Revit 2019». При первом запуске после сборки Revit спросит про надстройку без подписи — нажмите «Загрузить один раз» или «Всегда загружать».
 
-**Claude Desktop**
+## Работа с агентом
 
-Claude Desktop → Settings → Developer → Edit Config → `claude_desktop_config.json`:
+Примеры запросов:
+
+- «Запусти Revit 2019 и создай семейство типовой модели» — `launch_revit`, `new_family`.
+- «Смоделируй кран по ИД из папки … по правилам Альтерпласта» — агент читает `get_family_rules profile: "alterplast"`, моделирует командами семейств, проверяет `check_family_rules`.
+- «Проверь это семейство по правилам коллекторов» — `check_family_rules profile: "alterplast-multiport"`.
+- «Какие команды есть у Альтерпласта?» — `list_command_sets set: "Alterplast"`.
+
+Без названного проекта действуют только общие правила `global`. Все команды доступны агенту всегда.
+
+## Наборы команд и категории
+
+Код всех команд лежит в одном месте. Набор — это список: поле `sets` у каждой команды в [command.json](command.json) говорит, к каким наборам она относится.
 
 ```json
-{
-    "mcpServers": {
-        "mcp-server-for-revit": {
-            "command": "cmd",
-            "args": ["/c", "npx", "-y", "mcp-server-for-revit"]
-        }
-    }
-}
+{ "commandName": "new_family", "section": "session", "status": "validated",
+  "sets": ["Global", "Alterplast"], "parameters": [{ "name": "template", "required": true }] }
 ```
 
-Restart Claude Desktop. When you see the hammer icon, the MCP server is connected.
+| Набор | Команд | Что входит |
+|---|---|---|
+| Global | 84 C# + 12 серверных | всё, что пригодится в любом проекте |
+| Alterplast | 56 | все команды прежнего набора семейств; `create_family_inspection_copy` — только здесь |
 
-![Claude Desktop connection](./assets/claude.png)
+- **`section`** — категория из [sections.json](sections.json): геометрия, опорные плоскости и размеры, параметры, таблицы выбора, коннекторы, топография и т. д. (15 категорий).
+- **`status`** — `validated` (проверена) или `experimental`.
+- **`parameters`** — входные параметры, заполняются скриптом из схем инструментов сервера.
 
-## Revit Plugin Setup
+Как команда проекта становится общей — [PROMOTION.md](PROMOTION.md).
 
-If using a release ZIP, the plugin is already included. For manual installation:
+## Правила моделирования
 
-1. Build the plugin from `plugin/` (see [Development](#development))
-2. Copy `mcp-servers-for-revit.addin` to `%AppData%\Autodesk\Revit\Addins\<version>\`
-3. Copy the `revit_mcp_plugin/` folder to the same addins directory
+```
+rules/
+├── global/                      общие правила (draft)
+├── adsk/                        пакет: параметры ADSK
+├── Альтерпласт/                 проект: extends [global, adsk]
+├── Альтерпласт_коллекторы/      проект: extends alterplast
+└── _шаблон/                     шаблон нового профиля
+```
 
-## Command Set Setup
+Профиль — `profile.json` (автоматические проверки, соглашения, ФОП) и тексты правил по разделам. Слои складываются от общего к частному. Подробно — [rules/README.md](rules/README.md).
 
-There are two command sets:
+## Новый проект
 
-| Command set | Source | Manifest | Commands |
-|---|---|---|---|
-| `RevitMCPCommandSet` | `commandset/` | `command.json` (repo root) | Project modelling, data, topography, dynamic code |
-| `RevitMCPFamilyCommandSet` | `familycommandset/` | `familycommandset/command.json` | Family editor: `*_family_*` tools |
+```powershell
+.\scripts\new-project.ps1 -Id proplan -Name "ПроПлан" -Extends global,adsk -SharedParameterFile "D:\ФОП\ФОП2022.txt"
+```
 
-If using a release ZIP, both are pre-installed inside the plugin. For manual installation, for each set:
+Создаёт профиль правил, карточку проекта и папку скриптов. Свой набор команд проект заводит в `commandSets` файла `command.json`.
 
-1. Build it (see [Development](#development))
-2. Inside the plugin's installation directory, create `Commands/<command set>/<year>/`
-3. Copy the built DLLs into that folder
-4. Copy its `command.json` into `Commands/<command set>/`
+## Скрипты
 
-Then open **Settings** in Revit and save, so the command registry picks up the new paths.
+| Скрипт | Что делает |
+|---|---|
+| `scripts/install-local.ps1 -Year <год>` | установить плагин и команды в Revit; `-AutoStart on` — сервер стартует при любом запуске Revit; `-Port` — свой порт |
+| `node scripts/check-integrity.mjs` | сверка: манифест ↔ C#-классы ↔ инструменты сервера, наборы, категории, профили правил. Запускать перед сборкой |
+| `node scripts/sync-command-parameters.mjs` | записать параметры команд в манифест из схем собранного сервера (`--check` — только проверить) |
+| `scripts/new-project.ps1` | завести новый проект моделирования |
+| `scripts/release.ps1` | поднять версию для выпуска (см. «Выпуск») |
 
-## Supported Tools
+## Как добавить команду
 
-| Tool | Description |
-| ---- | ----------- |
-| `get_current_view_info` | Get current active view info |
-| `get_current_view_elements` | Get elements from the current active view |
-| `get_available_family_types` | Get available family types in current project |
-| `get_selected_elements` | Get currently selected elements |
-| `get_material_quantities` | Calculate material quantities and takeoffs |
-| `ai_element_filter` | Intelligent element querying tool for AI assistants |
-| `analyze_model_statistics` | Analyze model complexity with element counts |
-| `create_point_based_element` | Create point-based elements (door, window, furniture) |
-| `create_line_based_element` | Create line-based elements (wall, beam, pipe) |
-| `create_surface_based_element` | Create surface-based elements (floor, ceiling, roof) |
-| `create_grid` | Create a grid system with smart spacing generation |
-| `create_level` | Create levels at specified elevations |
-| `create_room` | Create and place rooms at specified locations |
-| `create_dimensions` | Create dimension annotations in the current view |
-| `create_structural_framing_system` | Create a structural beam framing system |
-| `delete_element` | Delete elements by ID |
-| `operate_element` | Operate on elements (select, setColor, hide, etc.) |
-| `color_elements` | Color elements based on a parameter value |
-| `tag_all_walls` | Tag all walls in the current view |
-| `tag_all_rooms` | Tag all rooms in the current view |
-| `export_room_data` | Export all room data from the project |
-| `store_project_data` | Store project metadata in local database |
-| `store_room_data` | Store room metadata in local database |
-| `query_stored_data` | Query stored project and room data |
-| `send_code_to_revit` | Send C# code to Revit to execute |
-| `say_hello` | Display a greeting dialog in Revit (connection test) |
-
-## Testing
-
-The test project uses [Nice3point.TUnit.Revit](https://github.com/Nice3point/RevitUnit) to run integration tests against a live Revit instance. No separate addin installation is required — the framework injects into the running Revit process automatically.
-
-### Prerequisites
-
-- **.NET 10 SDK** — required by Nice3point.Revit.Sdk 6.1.0. Install via `winget install Microsoft.DotNet.SDK.10`
-- **Autodesk Revit 2026** (or 2025) — must be installed and licensed on your machine
-
-### Running Tests
-
-1. Open Revit 2026 (or 2025) and wait for it to fully load
-2. Run the tests from the command line:
+Коротко: C#-обработчик и команда в `commandset/`, запись в `command.json` (`section`, `status`, `sets`), инструмент в `server/src/tools/`, затем:
 
 ```bash
-# For Revit 2026
+node scripts/check-integrity.mjs
+npm --prefix server run build
+node scripts/sync-command-parameters.mjs
+dotnet build tiver-mcp-plugin.sln -c "Release R19"
+```
+
+Пошагово — [MCP добавить новые команды локально.md](MCP%20добавить%20новые%20команды%20локально.md).
+
+## Структура репозитория
+
+```
+tiver-mcp-plugin/
+├── command.json            манифест: все команды, их наборы, категории, параметры
+├── sections.json           категории команд и разделы правил
+├── commandset/             команды Revit (C#): модель проекта; Family/ — редактор семейств
+├── plugin/                 надстройка Revit (C#): сервер сокета, загрузка команд, окно Settings
+├── server/                 MCP-сервер (TypeScript): инструменты, правила, запуск Revit
+├── rules/                  профили правил моделирования
+├── projects/               карточки и скрипты проектов
+├── scripts/                установка, сверка, новый проект
+├── tests/                  интеграционные тесты (TUnit, живой Revit)
+├── tiver-mcp-plugin.sln    решение: плагин, команды, тесты
+└── .mcp.json               подключение MCP-сервера для Claude Code
+```
+
+## Документация
+
+| Документ | О чём |
+|---|---|
+| [PROMOTION.md](PROMOTION.md) | общее и проектное: наборы команд, ступени команды, критерии переноса в Global |
+| [MCP добавить новые команды локально.md](MCP%20добавить%20новые%20команды%20локально.md) | как добавить команду: три слоя, манифест, сборка |
+| [rules/README.md](rules/README.md) | профили правил, наследование, проверки |
+| [MULTI_PORT.ru.md](MULTI_PORT.ru.md) | несколько Revit одновременно, порты |
+| [План тестирования](План%20тестирования%20команд%20семейств.md), [отчёт](Отчёт%20тестирования%20команд%20семейств.md) | проверка команд семейств |
+
+## Безопасность
+
+- Плагин слушает порт только на `127.0.0.1`: среди команд есть выполнение произвольного кода (`send_code_to_revit`), из сети он недоступен.
+- Сервер плагина сам поднимается только у Revit, запущенного агентом (`launch_revit`). Revit, открытый вручную, порт не открывает, пока не нажата кнопка или не включён автозапуск.
+- Плагин не подписан: после каждой пересборки Revit спрашивает про надстройку без подписи.
+
+## Логи
+
+- Плагин: `%APPDATA%\Autodesk\Revit\Addins\<год>\revit_mcp_plugin\Logs\mcp_<дата>.log` (кнопка **Open Logs** в окне Settings).
+- Сервер пишет в stderr, его показывает Claude Code (`/mcp`).
+
+## Тесты
+
+Интеграционные тесты команд модели проекта — в `tests/commandset/`, на [Nice3point.TUnit.Revit](https://github.com/Nice3point/RevitUnit). Нужны .NET 10 SDK и запущенный Revit 2025 или 2026:
+
+```bash
 dotnet test -c Debug.R26 -r win-x64 tests/commandset
-
-# For Revit 2025
-dotnet test -c Debug.R25 -r win-x64 tests/commandset
 ```
 
-> **Note:** The `-r win-x64` flag is required on ARM64 machines because the Revit API assemblies are x64-only.
+Команды семейств проверяются по [плану тестирования](План%20тестирования%20команд%20семейств.md) в живом Revit.
 
-Alternatively, you can use `dotnet run`:
+## Выпуск
 
-```bash
-cd tests/commandset
-dotnet run -c Debug.R26
-```
+Выпуск по тегу `v*` — workflow [.github/workflows/release.yml](.github/workflows/release.yml) и `scripts/release.ps1` — пока не настроен: workflow собирает Revit 2020–2026 без 2019 и публикует сервер в npm. Перед первым выпуском его нужно доработать: добавить 2019 и решить, нужна ли публикация в npm.
 
-### IDE Support
+## Лицензия
 
-- **JetBrains Rider** — enable "Testing Platform support" in Settings > Build, Execution, Deployment > Unit Testing > Testing Platform
-- **Visual Studio** — tests should be discoverable through the standard Test Explorer
-
-### Test Structure
-
-| Directory | Purpose |
-|-----------|---------|
-| `tests/commandset/AssemblyInfo.cs` | Global `[assembly: TestExecutor<RevitThreadExecutor>]` registration |
-| `tests/commandset/Architecture/` | Tests for level and room creation commands |
-| `tests/commandset/DataExtraction/` | Tests for model statistics, room data export, and material quantities |
-| `tests/commandset/ColorSplashTests.cs` | Tests for color override functionality |
-| `tests/commandset/TagRoomsTests.cs` | Tests for room tagging functionality |
-
-### Writing New Tests
-
-Test classes inherit from `RevitApiTest` and use TUnit's async assertion API:
-
-```csharp
-public class MyTests : RevitApiTest
-{
-    private static Document _doc;
-
-    [Before(HookType.Class)]
-    [HookExecutor<RevitThreadExecutor>]
-    public static void Setup()
-    {
-        _doc = Application.NewProjectDocument(UnitSystem.Imperial);
-    }
-
-    [After(HookType.Class)]
-    [HookExecutor<RevitThreadExecutor>]
-    public static void Cleanup()
-    {
-        _doc?.Close(false);
-    }
-
-    [Test]
-    public async Task MyTest_Condition_ExpectedResult()
-    {
-        var elements = new FilteredElementCollector(_doc)
-            .WhereElementIsNotElementType()
-            .ToElements();
-
-        await Assert.That(elements.Count).IsGreaterThan(0);
-    }
-}
-```
-
-## Development
-
-### MCP Server
-
-```bash
-cd server
-npm install
-npm run build
-```
-
-The server compiles TypeScript to `server/build/`. During development you can run it directly with `npx tsx server/src/index.ts`.
-
-### Revit Plugin + Command Set
-
-Open `mcp-servers-for-revit.sln` in Visual Studio. The solution contains both the plugin and command set projects. Build configurations target Revit 2020-2026:
-
-- **Revit 2020-2024**: .NET Framework 4.8 (`Release R20` through `Release R24`)
-- **Revit 2025-2026**: .NET 8 (`Release R25`, `Release R26`)
-
-Building the solution automatically assembles the complete deployable layout in `plugin/bin/AddIn <year> <config>/` - the command set is copied into the plugin's `Commands/` folder as part of the build.
-
-## Project Structure
-
-```
-mcp-servers-for-revit/
-├── mcp-servers-for-revit.sln    # Combined solution (plugin + command sets + tests)
-├── command.json     # Main command set manifest
-├── familycommandset/ # Family editor command set (C#) with its own command.json
-├── server/          # MCP server (TypeScript) - tools exposed to AI clients
-├── plugin/          # Revit add-in (C#) - WebSocket bridge inside Revit
-├── commandset/      # Command implementations (C#) - Revit API operations
-├── tests/           # Integration tests (C#) - TUnit tests against live Revit
-├── assets/          # Images for documentation
-├── .github/         # CI/CD workflows, contributing guide, code of conduct
-├── LICENSE
-└── README.md
-```
-
-## Releasing
-
-A single `v*` tag drives the entire release. The [release workflow](.github/workflows/release.yml) automatically:
-
-- Builds the Revit plugin + command set for Revit 2020-2026
-- Creates a GitHub release with `mcp-servers-for-revit-vX.Y.Z-Revit<year>.zip` assets
-- Publishes the MCP server to npm as [`mcp-server-for-revit`](https://www.npmjs.com/package/mcp-server-for-revit)
-
-To create a release:
-
-1. Run the bump script (updates `server/package.json`, `server/package-lock.json`, and `plugin/Properties/AssemblyInfo.cs`, then commits and tags):
-   ```powershell
-   ./scripts/release.ps1 -Version X.Y.Z
-   ```
-
-2. Push to trigger the workflow:
-   ```bash
-   git push origin main --tags
-   ```
-
-> [!NOTE]
-> npm publish uses [trusted publishing](https://docs.npmjs.com/trusted-publishers/) via OIDC — no npm token is required. Provenance attestation is generated automatically.
-
-## Acknowledgements
-
-This project is a fork of the work by the [mcp-servers-for-revit](https://github.com/mcp-servers-for-revit) team. The original repositories:
-
-- [revit-mcp](https://github.com/mcp-servers-for-revit/revit-mcp) - MCP server
-- [revit-mcp-plugin](https://github.com/mcp-servers-for-revit/revit-mcp-plugin) - Revit plugin
-- [revit-mcp-commandset](https://github.com/mcp-servers-for-revit/revit-mcp-commandset) - Command set
-
-Thank you to the original authors for creating the foundation that this project builds upon.
-
-## License
-
-[MIT](LICENSE)
+[MIT](LICENSE).

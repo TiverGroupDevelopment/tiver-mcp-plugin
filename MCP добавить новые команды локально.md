@@ -4,16 +4,15 @@ Oct 28, 2026 · @Sem
 
 ## Как устроено
 
-Каждая команда проходит через три слоя, и её имя должно совпадать во всех трёх местах. Пути ниже указаны от `D:\Repos\tiver-mcp-plugin`.
+Каждая команда проходит через три слоя, и её имя должно совпадать во всех трёх местах. Пути ниже указаны от корня репозитория.
 
 | Слой | Папка | Что делает |
 | --- | --- | --- |
 | MCP-сервер (TypeScript) | `server/` | Объявляет инструмент для ИИ и пересылает вызов в Revit через `sendCommand` |
 | Плагин Revit | `plugin/` | Читает `command.json`, находит в DLL класс с нужным `CommandName` через рефлексию |
-| Набор команд (C#) | `commandset/` | Выполняет работу через Revit API |
-| Набор команд семейств (C#) | `familycommandset/` | Команды редактора семейств (`*_family_*`), свой `command.json` |
+| Команды (C#) | `commandset/` | Код всех команд: модель проекта и редактор семейств (`commandset/Family/`), одна сборка `RevitMCPCommandSet.dll` |
 
-Команды семейств живут в отдельном наборе `RevitMCPFamilyCommandSet`: код в `familycommandset/`, манифест — `familycommandset/command.json`, `assemblyPath` — `RevitMCPFamilyCommandSet.dll`. Новую команду для семейств добавлять туда, остальные — в `commandset/` и корневой `command.json`. Утилиты `JsonArgs`, `FamilyEditorIds`, `WarningCollector` лежат в обоих наборах: ими пользуется топография.
+Код всех команд лежит в одном месте, манифест — корневой `command.json`. Наборы (Global, Alterplast) — это списки: к каким наборам относится команда, говорит её поле `sets`. Команда может входить в несколько наборов. Новая команда входит в Global, если пригодится при моделировании вообще, и в набор проекта, если проект ею пользуется ([PROMOTION.md](PROMOTION.md)). Утилиты `JsonArgs`, `FamilyEditorIds`, `WarningCollector` есть в двух пространствах имён: старое (`RevitMCPCommandSet.Utils.FamilyEditor`) нужно топографии.
 
 Имя команды должно совпадать в трёх местах: `CommandName` в C#, `commandName` в `command.json` и `sendCommand("…")` в TypeScript. Имя инструмента для ИИ может отличаться: например, `color_elements` вызывает команду `color_splash`.
 
@@ -32,7 +31,7 @@ Oct 28, 2026 · @Sem
 
 ### Шаг 2. Команда (C#)
 
-Файл `commandset/Commands/<Папка>/MyCommand.cs`, образец: `Commands/Test/SayHelloCommand.cs`. Для семейств есть базовый класс `FamilyEditorCommandBase` (в `familycommandset/Commands/FamilyEditor/`), для топографии — `TopographyCommandBase`.
+Файл `commandset/Commands/<Папка>/MyCommand.cs`, образец: `Commands/Test/SayHelloCommand.cs`. Для семейств есть базовый класс `FamilyEditorCommandBase` (в `commandset/Family/Commands/FamilyEditor/`), для топографии — `TopographyCommandBase`.
 
 ```csharp
 public class MyCommand : ExternalEventCommandBase
@@ -59,8 +58,29 @@ public class MyCommand : ExternalEventCommandBase
 Добавить запись в массив `commands`:
 
 ```json
-{ "commandName": "my_command", "description": "Что делает команда", "assemblyPath": "RevitMCPCommandSet.dll" }
+{
+  "commandName": "my_command",
+  "description": "Что делает команда",
+  "assemblyPath": "RevitMCPCommandSet.dll",
+  "section": "geometry",
+  "status": "experimental",
+  "sets": ["Global", "Alterplast"]
+}
 ```
+
+Три метки обязательны:
+
+| Метка | Значения |
+| --- | --- |
+| `section` | раздел из `sections.json`: `session`, `parameters`, `geometry`, `nested`, `graphics`, `mep`, `checks`, `service`, `project` |
+| `status` | `experimental` — новая, не проверена; `validated` — проверена |
+| `sets` | наборы, в которые входит команда: `["Global"]` — общая; `["Global", "Alterplast"]` — общая, которой пользуется проект; `["Alterplast"]` — только для проекта. Наборы описаны в `commandSets` того же файла. Агенту доступны все команды |
+
+Если имя инструмента для ИИ отличается от имени команды, добавить `"tool": "<имя инструмента>"`. Инструмент, у которого нет своей C#-команды, записывается в `server/command.json`.
+
+Имя команды уникально: плагин не загрузит вторую команду с тем же именем и запишет ошибку в лог. Набор — не копия кода: одна команда в двух наборах — одна запись с двумя именами в `sets`.
+
+Как команда проекта становится общей (добавить `"Global"` в `sets`) — в [PROMOTION.md](PROMOTION.md).
 
 ### Шаг 4. MCP-инструмент (TypeScript)
 
@@ -74,30 +94,34 @@ public class MyCommand : ExternalEventCommandBase
 
 ### Шаг 5. Сборка
 
-1. Сервер: `npm --prefix "D:/Repos/tiver-mcp-plugin/server" run build`.
-2. Плагин и набор команд: собрать `mcp-servers-for-revit.sln` в Visual Studio. Конфигурации `Release R20`–`R24` для .NET 4.8, `R25`/`R26` для .NET 8. Результат появится в `plugin/bin/AddIn <год> <конфиг>/`.
-3. При ручной установке скопировать DLL и `command.json` каждого набора в `Commands/RevitMCPCommandSet/` и `Commands/RevitMCPFamilyCommandSet/` папки плагина, затем в Revit открыть **Settings** и сохранить: реестр команд получит новые пути.
+0. Сверка трёх слоёв: `node scripts/check-integrity.mjs`. Скрипт находит несовпадение имён между манифестом, C# и инструментом, дубли имён между наборами и пропущенные метки. Запускать до сборки.
+1. Сервер (из корня репозитория): `npm --prefix server run build`.
+1a. Параметры команд в манифестах: `node scripts/sync-command-parameters.mjs`. Скрипт берёт входные параметры из схем инструментов собранного сервера и пишет их в поле `parameters` (`--check` — только проверить). Их показывает столбец Parameters в окне настроек плагина. Описание команды (`description`) в манифесте пишется по-русски: его видит пользователь в том же окне.
+2. Плагин и набор команд: собрать `tiver-mcp-plugin.sln` в Visual Studio или `dotnet build tiver-mcp-plugin.sln -c "Release R19"`. Конфигурации `Release R20`–`R24` для .NET 4.8, `R25`/`R26` для .NET 8. Результат появится в `plugin/bin/AddIn <год> <конфиг>/`.
+3. Установка: `.\scripts\install-local.ps1 -Year <год>` — копирует сборку команд в `Commands/RevitMCPCommandSet/`, убирает устаревшие папки и пересобирает реестр команд. При ручной установке скопировать DLL и `command.json` в эту папку, затем в Revit открыть **Settings** и сохранить.
 
 ### Шаг 6. Подключение клиента к локальной сборке
 
-Сделано: в `D:\Repos\tiver-mcp-plugin\.mcp.json` прописан сервер `revit-local`:
+Сделано: в `.mcp.json` в корне репозитория прописан сервер `revit-local`:
 
 ```json
 { "mcpServers": { "revit-local": { "type": "stdio", "command": "node",
-    "args": ["D:/Repos/tiver-mcp-plugin/server/build/index.js"],
+    "args": ["${CLAUDE_PROJECT_DIR:-.}/server/build/index.js"],
     "env": { "NODE_OPTIONS": "--dns-result-order=ipv4first" } } } }
 ```
 
-Раньше клиент запускал `npx -y mcp-server-for-revit`, то есть опубликованный пакет из npm без новых команд. Старую запись нужно удалить, запустив из `C:\Users\alexg`:
+Путь к серверу не абсолютный: файл лежит в git и работает в любой папке, куда склонирован репозиторий. Форма `${CLAUDE_PROJECT_DIR:-.}` — та, что документация Claude Code советует для `args` в `.mcp.json` проекта. После изменения `.mcp.json` Claude Code заново спрашивает разрешение на сервер `revit-local`.
 
-```bash
-claude mcp remove mcp-server-for-revit -s local
+Папку исходных данных проектов (для эталонов в профилях правил) каждый задаёт у себя переменной `REVIT_MCP_DATA_DIR`. Например, в `.claude/settings.local.json` (этот файл не попадает в git):
+
+```json
+{ "env": { "REVIT_MCP_DATA_DIR": "D:\\Семейства" } }
 ```
 
 ### Шаг 7. Перезапуск и проверка
 
 - [ ] Перезапустить Revit, чтобы загрузились новый плагин и `command.json`.
-- [ ] Открыть новую сессию Claude в `D:\Repos\tiver-mcp-plugin` и подтвердить доверие к `.mcp.json`.
+- [ ] Открыть новую сессию Claude в корне репозитория и подтвердить доверие к `.mcp.json`.
 - [ ] Проверить, что новый инструмент есть в списке (в терминале `claude` — команда `/mcp`).
 - [ ] Вызвать инструмент на тестовой модели.
 
@@ -109,39 +133,6 @@ claude mcp remove mcp-server-for-revit -s local
 
 | Проблема | Причина | Решение |
 | --- | --- | --- |
-| Не загружаются `store_project_data`, `store_room_data`, `query_stored_data` | `better-sqlite3` 12.8 требует Node 20+, установлен Node 18.0.0 | Обновить Node до LTS (22.x), затем `npm --prefix "D:/Repos/tiver-mcp-plugin/server" rebuild better-sqlite3` |
+| Не загружаются `store_project_data`, `store_room_data`, `query_stored_data` | `better-sqlite3` 12.8 требует Node 20+, установлен Node 18.0.0 | Обновить Node до LTS (22.x), затем из корня репозитория `npm --prefix server rebuild better-sqlite3` |
 | Предупреждения «не найдена функция регистрации» при запуске | Пустые файлы `use_module.ts`, `search_modules.ts`, `modify_element.ts` в `server/src/tools` | Удалить или дописать; на работу не влияет |
 | После правок в `server/src` новый инструмент не появился | Клиент запускает `server/build`, а не исходники | `npm run build` и новая сессия Claude |
-
-## Возврат к исходным настройкам
-
-Чтобы вернуть исходное состояние, достаточно удалить `revit-local` и вернуть запись через npx, если она уже удалена. Клиент снова будет запускать пакет из npm с 26 инструментами.
-
-### Что было изменено
-
-| Изменение | Нужен ли откат |
-| --- | --- |
-| Создан `D:\Repos\tiver-mcp-plugin\.mcp.json` с сервером `revit-local` | Да |
-| Пересобран `server/build` из тех же исходников | Нет |
-| Попытка пересобрать `better-sqlite3`, завершилась ошибкой, рабочее состояние не изменилось | Нет |
-| Запись `mcp-server-for-revit` в `C:\Users\alexg\.claude.json` | Не трогалась; вернуть, только если вы её удалили |
-
-### Как откатить
-
-1. Удалить локальный сервер (или просто удалить файл `.mcp.json`):
-
-   ```bash
-   claude mcp remove revit-local -s project
-   ```
-2. Если доверие к `.mcp.json` уже подтверждено, сбросить его из `D:\Repos\tiver-mcp-plugin`:
-
-   ```bash
-   claude mcp reset-project-choices
-   ```
-3. Если старая запись через npx уже удалена, вернуть её из `C:\Users\alexg`. Исходные параметры: `"type": "stdio"`, `"command": "cmd"`, `"args": ["/c", "npx", "-y", "mcp-server-for-revit"]`.
-
-   ```bash
-   claude mcp add mcp-server-for-revit -s local -- cmd /c npx -y mcp-server-for-revit
-   ```
-4. Node: если вы обновили его и хотите вернуть 18.0.0, переустановить с nodejs.org (архив версий). Для отката MCP-конфига это не нужно.
-5. Открыть новую сессию Claude и проверить, что сервер снова называется `mcp-server-for-revit`.
