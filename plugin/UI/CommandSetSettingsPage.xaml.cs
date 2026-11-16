@@ -18,6 +18,8 @@ namespace revit_mcp_plugin.UI
     {
         private ObservableCollection<CommandSet> commandSets;
         private ObservableCollection<CommandConfig> currentCommands;
+        // Разработчик из манифеста пакета, где лежит команда (для новых записей реестра).
+        private readonly Dictionary<string, DeveloperInfo> commandDevelopers = new Dictionary<string, DeveloperInfo>();
 
         public CommandSetSettingsPage()
         {
@@ -32,6 +34,8 @@ namespace revit_mcp_plugin.UI
             LoadCommandSets();
             // Initial state
             NoSelectionTextBlock.Visibility = Visibility.Visible;
+            // Ширина окна по столбцам — как только окно покажется.
+            Loaded += (sender, e) => FitWindowToColumns();
         }
 
         private void LoadCommandSets()
@@ -42,8 +46,14 @@ namespace revit_mcp_plugin.UI
                 string commandsDirectory = PathManager.GetCommandsDirectoryPath();
                 string registryFilePath = PathManager.GetCommandRegistryFilePath();
                 // 1. First load all command set folders, establish available command collections
+                // Папка в Commands — пакет кода (DLL + command.json). Наборы, которые видит пользователь,
+                // берутся из поля sets у команды: одна команда может входить в несколько наборов
+                // (Global и Alterplast). В разных наборах это один и тот же объект команды:
+                // галочка в одном наборе — галочка во всех, в реестр команда попадает один раз.
                 Dictionary<string, CommandSet> availableCommandSets = new Dictionary<string, CommandSet>();
                 HashSet<string> availableCommandNames = new HashSet<string>();
+                Dictionary<string, CommandConfig> commandsByName = new Dictionary<string, CommandConfig>();
+                commandDevelopers.Clear();
                 // Get all command set directories
                 string[] commandSetDirectories = Directory.GetDirectories(commandsDirectory);
                 foreach (var directory in commandSetDirectories)
@@ -59,14 +69,27 @@ namespace revit_mcp_plugin.UI
                         var commandSetData = JsonConvert.DeserializeObject<CommandJson>(commandJson);
                         if (commandSetData != null)
                         {
-                            var newCommandSet = new CommandSet
+                            var categories = LoadSections(directory);
+                            // Описания наборов из манифеста; набор по умолчанию — сам пакет.
+                            var setDescriptions = (commandSetData.CommandSets ?? new List<CommandSetInfoJson>())
+                                .Where(s => !string.IsNullOrEmpty(s.Name))
+                                .ToDictionary(s => s.Name, s => s.Description);
+                            CommandSet SetFor(string setName)
                             {
-                                Name = commandSetData.Name,
-                                Description = commandSetData.Description,
-                                Commands = new List<CommandConfig>()
-                            };
+                                if (!availableCommandSets.TryGetValue(setName, out var set))
+                                {
+                                    set = new CommandSet
+                                    {
+                                        Name = setName,
+                                        Description = setDescriptions.TryGetValue(setName, out var description) ? description : commandSetData.Description,
+                                        Commands = new List<CommandConfig>()
+                                    };
+                                    availableCommandSets[setName] = set;
+                                }
+                                return set;
+                            }
 
-                            // 检测支持的Revit版本 - 从年份子文件夹确定
+                            // Detect supported Revit versions from the year subfolders
                             List<string> supportedVersions = new List<string>();
                             var versionDirectories = Directory.GetDirectories(directory)
                                 .Select(Path.GetFileName)
@@ -76,7 +99,7 @@ namespace revit_mcp_plugin.UI
                             // Loop through each command
                             foreach (var command in commandSetData.Commands)
                             {
-                                // 创建一个命令配置，但通过检查文件夹确定支持的版本
+                                // Build a command config; supported versions come from the folders
                                 List<string> supportedCommandVersions = new List<string>();
                                 string dllBasePath = null;
 
@@ -87,14 +110,14 @@ namespace revit_mcp_plugin.UI
 
                                     if (!string.IsNullOrEmpty(command.AssemblyPath))
                                     {
-                                        // 如果指定了相对路径，在版本子文件夹中查找
+                                        // Relative path given: look for it in the version subfolder
                                         versionDllPath = Path.Combine(versionDirectory, command.AssemblyPath);
                                         if (File.Exists(versionDllPath))
                                         {
-                                            // 记录基本路径模板
+                                            // Remember the base path template
                                             if (dllBasePath == null)
                                             {
-                                                // 提取相对路径，用于创建模板
+                                                // Build the template from the relative path
                                                 dllBasePath = Path.Combine(commandSetData.Name, "{VERSION}", command.AssemblyPath);
                                             }
                                             supportedCommandVersions.Add(version);
@@ -102,14 +125,14 @@ namespace revit_mcp_plugin.UI
                                     }
                                     else
                                     {
-                                        // 如果没有指定路径，在版本子文件夹中查找任意DLL
+                                        // No path given: take any DLL in the version subfolder
                                         var dllFiles = Directory.GetFiles(versionDirectory, "*.dll");
                                         if (dllFiles.Length > 0)
                                         {
-                                            versionDllPath = dllFiles[0]; // 使用找到的第一个DLL
+                                            versionDllPath = dllFiles[0]; // Use the first DLL found
                                             if (dllBasePath == null)
                                             {
-                                                // 提取DLL文件名
+                                                // Get the DLL file name
                                                 string dllFileName = Path.GetFileName(versionDllPath);
                                                 dllBasePath = Path.Combine(commandSetData.Name, "{VERSION}", dllFileName);
                                             }
@@ -118,31 +141,49 @@ namespace revit_mcp_plugin.UI
                                     }
                                 }
 
-                                // 如果至少有一个版本支持此命令
+                                // At least one version supports this command
                                 if (supportedCommandVersions.Count > 0 && dllBasePath != null)
                                 {
-                                    // 创建命令配置
+                                    // Команда с тем же именем из другого пакета не загрузится: показываем первую.
+                                    if (commandsByName.ContainsKey(command.CommandName)) continue;
+
+                                    // Create the command config
                                     var commandConfig = new CommandConfig
                                     {
                                         CommandName = command.CommandName,
                                         Description = command.Description,
-                                        // 使用带有版本占位符的路径
+                                        // Path with the version placeholder
                                         AssemblyPath = dllBasePath,
                                         Enabled = false,
-                                        // 记录所有支持的版本
+                                        // All supported versions
                                         SupportedRevitVersions = supportedCommandVersions.ToArray()
                                     };
-
-                                    // 添加到命令列表
-                                    newCommandSet.Commands.Add(commandConfig);
+                                    commandConfig.ParametersText = command.Parameters == null || command.Parameters.Count == 0
+                                        ? "—"
+                                        : string.Join(", ", command.Parameters.Select(p => p.Name));
+                                    // Категория — раздел команды; название и порядок — из sections.json.
+                                    if (!string.IsNullOrEmpty(command.Section) && categories.TryGetValue(command.Section, out var category))
+                                    {
+                                        commandConfig.Category = category.Title;
+                                        commandConfig.CategoryOrder = category.Order;
+                                    }
+                                    else
+                                    {
+                                        commandConfig.Category = string.IsNullOrEmpty(command.Section) ? "Без категории" : command.Section;
+                                    }
+                                    commandsByName[command.CommandName] = commandConfig;
+                                    commandDevelopers[command.CommandName] = commandSetData.Developer;
                                     availableCommandNames.Add(command.CommandName);
-                                }
-                            }
 
-                            // 如果有可用命令，添加到命令集列表
-                            if (newCommandSet.Commands.Any())
-                            {
-                                availableCommandSets[commandSetData.Name] = newCommandSet;
+                                    // Тот же объект — во всех наборах команды.
+                                    var setNames = command.Sets != null && command.Sets.Count > 0
+                                        ? command.Sets
+                                        : new List<string> { commandSetData.Name };
+                                    foreach (var setName in setNames.Distinct())
+                                    {
+                                        SetFor(setName).Commands.Add(commandConfig);
+                                    }
+                                }
                             }
                         }
                     }
@@ -200,68 +241,165 @@ namespace revit_mcp_plugin.UI
             }
         }
 
-        private void CommandSetListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        /// <summary>
+        /// Разделы (категории) команд: sections.json рядом с command.json пакета. Ключ → название и порядок.
+        /// Нет файла — категорией служит сам ключ раздела.
+        /// </summary>
+        private static Dictionary<string, (string Title, int Order)> LoadSections(string packageDirectory)
         {
-            currentCommands.Clear();
-            var selectedCommandSet = CommandSetListBox.SelectedItem as CommandSet;
-            if (selectedCommandSet != null)
+            var result = new Dictionary<string, (string Title, int Order)>(StringComparer.OrdinalIgnoreCase);
+            try
             {
-                NoSelectionTextBlock.Visibility = Visibility.Collapsed;
-                FeaturesHeaderTextBlock.Text = $"{selectedCommandSet.Name} - Command List";
-                // Load commands from selected command set
-                foreach (var command in selectedCommandSet.Commands)
+                string path = Path.Combine(packageDirectory, "sections.json");
+                if (!File.Exists(path)) return result;
+                var sections = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(path));
+                int order = 0;
+                foreach (var property in sections.Properties())
                 {
-                    currentCommands.Add(command);
+                    result[property.Name] = (property.Value.ToString(), order++);
                 }
             }
-            else
+            catch
+            {
+                // Испорченный sections.json не должен ломать окно: категории будут ключами разделов.
+            }
+            return result;
+        }
+
+        private void CommandSetListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ShowSelectedCommandSet();
+        }
+
+        private void GroupByCategoryCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            ShowSelectedCommandSet();
+        }
+
+        /// <summary>
+        /// Команды выбранного набора: с флажком Category — по раскрывающимся категориям
+        /// (в порядке sections.json), без него — одним списком в порядке манифеста.
+        /// </summary>
+        private void ShowSelectedCommandSet()
+        {
+            if (currentCommands == null || FeaturesListView == null) return;
+            currentCommands.Clear();
+            var view = System.Windows.Data.CollectionViewSource.GetDefaultView(FeaturesListView.ItemsSource);
+            view?.GroupDescriptions.Clear();
+
+            var selectedCommandSet = CommandSetListBox.SelectedItem as CommandSet;
+            if (selectedCommandSet == null)
             {
                 NoSelectionTextBlock.Visibility = Visibility.Visible;
                 FeaturesHeaderTextBlock.Text = "Command List";
+                return;
+            }
+
+            NoSelectionTextBlock.Visibility = Visibility.Collapsed;
+            FeaturesHeaderTextBlock.Text = $"{selectedCommandSet.Name} - Command List ({selectedCommandSet.Commands.Count})";
+
+            bool grouped = GroupByCategoryCheckBox.IsChecked == true;
+            // OrderBy устойчивая: внутри категории команды идут в порядке манифеста.
+            var commands = grouped
+                ? selectedCommandSet.Commands.OrderBy(c => c.CategoryOrder).ToList()
+                : selectedCommandSet.Commands;
+            foreach (var command in commands)
+            {
+                currentCommands.Add(command);
+            }
+            if (grouped)
+            {
+                view?.GroupDescriptions.Add(new System.Windows.Data.PropertyGroupDescription(nameof(CommandConfig.Category)));
             }
         }
 
-        private void RefreshButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Save current selection state
-            var selectedIndex = CommandSetListBox.SelectedIndex;
-            // Reload command sets
-            LoadCommandSets();
-            // Restore selection
-            if (selectedIndex >= 0 && selectedIndex < commandSets.Count)
-            {
-                CommandSetListBox.SelectedIndex = selectedIndex;
-            }
-        }
+        // Галочки обновляются сами (CommandConfig сообщает об изменении Enabled):
+        // список не перерисовывается, раскрытые категории остаются раскрытыми.
 
         private void SelectAllButton_Click(object sender, RoutedEventArgs e)
         {
             // Only operate on the currently displayed commands
-            if (currentCommands.Count > 0)
+            foreach (var command in currentCommands)
             {
-                foreach (var command in currentCommands)
-                {
-                    command.Enabled = true;
-                }
+                command.Enabled = true;
+            }
+        }
 
-                // Refresh the UI
-                FeaturesListView.Items.Refresh();
+        /// <summary>
+        /// Select Set: включить все команды открытого набора и выключить все остальные.
+        /// Команда, которая входит и в открытый набор, и в другой, остаётся включённой.
+        /// </summary>
+        private void SelectSetButton_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedCommandSet = CommandSetListBox.SelectedItem as CommandSet;
+            if (selectedCommandSet == null)
+            {
+                MessageBox.Show("Select a command set on the left first.", "Select Set",
+                                MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            var inSet = new HashSet<CommandConfig>(selectedCommandSet.Commands);
+            foreach (var command in commandSets.SelectMany(set => set.Commands).Distinct())
+            {
+                command.Enabled = inSet.Contains(command);
             }
         }
 
         private void UnselectAllButton_Click(object sender, RoutedEventArgs e)
         {
             // Only operate on the currently displayed commands
-            if (currentCommands.Count > 0)
+            foreach (var command in currentCommands)
             {
-                foreach (var command in currentCommands)
-                {
-                    command.Enabled = false;
-                }
-
-                // Refresh the UI
-                FeaturesListView.Items.Refresh();
+                command.Enabled = false;
             }
+        }
+
+        /// <summary>Показать или скрыть столбец Parameters целиком.</summary>
+        private void ShowParametersCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            if (FeaturesGridView == null || ParametersColumn == null) return;
+            bool show = ShowParametersCheckBox.IsChecked == true;
+            bool shown = FeaturesGridView.Columns.Contains(ParametersColumn);
+            if (show && !shown)
+            {
+                // На своё место: после Name.
+                FeaturesGridView.Columns.Insert(Math.Min(2, FeaturesGridView.Columns.Count), ParametersColumn);
+            }
+            else if (!show && shown)
+            {
+                FeaturesGridView.Columns.Remove(ParametersColumn);
+            }
+            FitWindowToColumns();
+        }
+
+        /// <summary>
+        /// Ширина окна — ровно по столбцам списка команд: правый край Description совпадает с краем списка,
+        /// горизонтальной прокрутки нет. Вызывается при открытии окна и при переключении флажка Parameters.
+        /// </summary>
+        private void FitWindowToColumns()
+        {
+            // После того как WPF разложит столбцы: иначе ширины ещё старые.
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                var window = Window.GetWindow(this);
+                if (window == null || FeaturesListView.ActualWidth <= 0) return;
+                if (window.WindowState != WindowState.Normal) return;
+
+                double columns = FeaturesGridView.Columns.Sum(column => double.IsNaN(column.Width) ? column.ActualWidth : column.Width);
+                // Вертикальная прокрутка списка и внутренние отступы строк ListView.
+                double needed = columns + SystemParameters.VerticalScrollBarWidth + 12;
+                double delta = needed - FeaturesListView.ActualWidth;
+                if (Math.Abs(delta) < 1) return;
+
+                double maxWidth = SystemParameters.WorkArea.Width;
+                double width = Math.Max(window.MinWidth, Math.Min(maxWidth, window.ActualWidth + delta));
+                // Окно не должно уехать за правый край экрана.
+                if (window.Left + width > SystemParameters.WorkArea.Right)
+                {
+                    window.Left = Math.Max(SystemParameters.WorkArea.Left, SystemParameters.WorkArea.Right - width);
+                }
+                window.Width = width;
+            }), System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -269,7 +407,7 @@ namespace revit_mcp_plugin.UI
             try
             {
                 string registryFilePath = PathManager.GetCommandRegistryFilePath();
-                // 读取现有的注册表以保留完整的命令信息
+                // Read the existing registry to keep full command info
                 Dictionary<string, CommandConfig> existingCommandsDict = new Dictionary<string, CommandConfig>();
                 IDictionary<string, Newtonsoft.Json.Linq.JToken> otherData = null;
                 if (File.Exists(registryFilePath))
@@ -285,41 +423,28 @@ namespace revit_mcp_plugin.UI
                         }
                     }
                 }
-                // 创建新的registry对象
+                // Create a new registry object
                 CommandRegistryJson registry = new CommandRegistryJson();
                 registry.Commands = new List<CommandConfig>();
                 registry.OtherData = otherData;
-                // 收集所有"已启用"的命令
+                // Collect all enabled commands
+                // Команда может входить в несколько наборов: в реестр она попадает один раз.
+                var saved = new HashSet<string>();
                 foreach (var commandSet in commandSets)
                 {
-                    // 尝试从command.json中获取开发者信息
-                    var commandSetDeveloper = new DeveloperInfo { Name = "Unspecified", Email = "Unspecified" };
-                    string commandJsonPath = Path.Combine(PathManager.GetCommandsDirectoryPath(),
-                        commandSet.Name, "command.json");
-                    if (File.Exists(commandJsonPath))
-                    {
-                        try
-                        {
-                            string commandJson = File.ReadAllText(commandJsonPath);
-                            var commandSetData = JsonConvert.DeserializeObject<CommandJson>(commandJson);
-                            if (commandSetData != null)
-                            {
-                                commandSetDeveloper = commandSetData.Developer ?? commandSetDeveloper;
-                            }
-                        }
-                        catch { /* 如果解析失败，使用默认值 */ }
-                    }
-
                     foreach (var command in commandSet.Commands)
                     {
-                        // 只添加启用的命令到注册表
-                        if (command.Enabled)
+                        // Only enabled commands go to the registry
+                        if (command.Enabled && saved.Add(command.CommandName))
                         {
+                            var commandSetDeveloper = commandDevelopers.TryGetValue(command.CommandName, out var developer) && developer != null
+                                ? developer
+                                : new DeveloperInfo { Name = "Unspecified", Email = "Unspecified" };
                             CommandConfig newConfig;
-                            // 检查命令是否已经存在于之前的注册表中
+                            // Check whether the command is already in the previous registry
                             if (existingCommandsDict.ContainsKey(command.CommandName))
                             {
-                                // 如果存在，保留原有信息，只更新启用状态和路径模板
+                                // Existing: keep its info, update only enabled state and path template
                                 newConfig = existingCommandsDict[command.CommandName];
                                 newConfig.Enabled = true;
                                 newConfig.AssemblyPath = command.AssemblyPath;
@@ -327,7 +452,7 @@ namespace revit_mcp_plugin.UI
                             }
                             else
                             {
-                                // 如果是新命令，创建新配置
+                                // New command: create a new config
                                 newConfig = new CommandConfig
                                 {
                                     CommandName = command.CommandName,
@@ -342,19 +467,19 @@ namespace revit_mcp_plugin.UI
                         }
                     }
                 }
-                // 构建摘要以显示
+                // Build the summary to show
                 string enabledFeaturesText = "";
                 int enabledCount = registry.Commands.Count;
                 foreach (var command in registry.Commands)
                 {
-                    string commandSetName = commandSets
-                        .FirstOrDefault(cs => cs.Commands.Any(c => c.CommandName == command.CommandName))?.Name ?? "Unknown";
+                    var setNames = commandSets.Where(cs => cs.Commands.Any(c => c.CommandName == command.CommandName)).Select(cs => cs.Name).ToList();
+                    string commandSetName = setNames.Count > 0 ? string.Join(", ", setNames) : "Unknown";
                     string versions = command.SupportedRevitVersions != null && command.SupportedRevitVersions.Any()
                         ? $" (Revit {string.Join(", ", command.SupportedRevitVersions)})"
                         : "";
                     enabledFeaturesText += $"• {commandSetName}: {command.CommandName}\n";
                 }
-                // 序列化并保存到文件
+                // Serialize and save to file
                 string json = JsonConvert.SerializeObject(registry, Formatting.Indented);
                 File.WriteAllText(registryFilePath, json);
                 MessageBox.Show($"Command set settings successfully saved!\n\nEnabled {enabledCount} commands:\n{enabledFeaturesText}",
@@ -367,15 +492,16 @@ namespace revit_mcp_plugin.UI
             }
         }
 
-        private void OpenFolderButton_Click(object sender, RoutedEventArgs e)
+        /// <summary>Open Logs: папка логов плагина (загрузка команд, порт, ошибки).</summary>
+        private void OpenLogsButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                Process.Start("explorer.exe", PathManager.GetCommandsDirectoryPath());
+                Process.Start("explorer.exe", PathManager.GetLogsDirectoryPath());
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error opening Commands folder: {ex.Message}", "Error",
+                MessageBox.Show($"Error opening Logs folder: {ex.Message}", "Error",
                               MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -387,6 +513,8 @@ namespace revit_mcp_plugin.UI
         public string Name { get; set; }
         public string Description { get; set; }
         public List<CommandConfig> Commands { get; set; } = new List<CommandConfig>();
+        /// <summary>Число команд набора для списка наборов: « (56)».</summary>
+        public string CountText => $" ({Commands.Count})";
     }
     // Configuration files
     public class CommandRegistryJson
@@ -406,6 +534,15 @@ namespace revit_mcp_plugin.UI
         public List<CommandItemJson> Commands { get; set; } = new List<CommandItemJson>();
         public DeveloperInfo Developer { get; set; }
         public List<string> SupportedRevitVersions { get; set; } = new List<string>();
+        /// <summary>Наборы команд: имя и описание. Состав набора — поле sets у команд.</summary>
+        public List<CommandSetInfoJson> CommandSets { get; set; } = new List<CommandSetInfoJson>();
+    }
+
+    public class CommandSetInfoJson
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Project { get; set; }
     }
 
     public class CommandItemJson
@@ -413,5 +550,17 @@ namespace revit_mcp_plugin.UI
         public string CommandName { get; set; }
         public string Description { get; set; }
         public string AssemblyPath { get; set; }
+        /// <summary>Наборы, в которые входит команда (Global, Alterplast). Пусто — набор = пакет.</summary>
+        public List<string> Sets { get; set; }
+        /// <summary>Раздел (категория) команды: ключ из sections.json.</summary>
+        public string Section { get; set; }
+        /// <summary>Входные параметры команды (scripts/sync-command-parameters.mjs).</summary>
+        public List<CommandParameterJson> Parameters { get; set; }
+    }
+
+    public class CommandParameterJson
+    {
+        public string Name { get; set; }
+        public bool Required { get; set; }
     }
 }
