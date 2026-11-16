@@ -66,8 +66,9 @@ def draw_view(tris, box, size, direction, up=(0, 0, 1)):
     return img, (lo, k, off)
 
 
-def ortho(tris, size, axes, labels):
-    """Проекция по двум осям (индексы), контур — заливка всех треугольников."""
+def ortho(tris, size, axes, labels, dims=None):
+    """Проекция по двум осям (индексы), контур — заливка всех треугольников.
+    dims — точный габарит из проверки для подписей (сетка треугольников грубее на дугах)."""
     img = Image.new('RGB', (size, size), BG)
     d = ImageDraw.Draw(img)
     if len(tris) == 0:
@@ -87,8 +88,9 @@ def ortho(tris, size, axes, labels):
     y0, y1 = size - oy, size - (oy + h)
     d.rectangle([x0, y1, x1, y0], outline=(60, 60, 60))
     fnt = font(15)
-    tw = f'{hi[0] - lo[0]:.0f}'
-    th = f'{hi[1] - lo[1]:.0f}'
+    a, b = dims if dims else (hi[0] - lo[0], hi[1] - lo[1])
+    tw = f'{a:.0f}'
+    th = f'{b:.0f}'
     d.line([x0, y0 + 14, x1, y0 + 14], fill=(200, 40, 40), width=1)
     d.text(((x0 + x1) / 2 - d.textlength(tw, font=fnt) / 2, y0 + 16), tw, fill=(200, 40, 40), font=fnt)
     d.line([x1 + 14, y0, x1 + 14, y1], fill=(200, 40, 40), width=1)
@@ -102,9 +104,11 @@ def render(family, tris, verify, out_path):
     sheet = Image.new('RGB', (W, H), BG)
     iso, _ = draw_view(tris, None, 500, (-1, 1, -1))
     sheet.paste(iso, (10, 50))
-    sheet.paste(ortho(tris, 270, [0, 2], 'Фасад (X–Z)'), (530, 50))
-    sheet.paste(ortho(tris, 270, [1, 2], 'Сбоку (Y–Z)'), (810, 50))
-    sheet.paste(ortho(tris, 270, [0, 1], 'План (X–Y)'), (530, 300))
+    sz = verify.get('size') or None
+    dims = (lambda i, j: (sz[i], sz[j]) if sz else None)
+    sheet.paste(ortho(tris, 270, [0, 2], 'Фасад (X–Z)', dims(0, 2)), (530, 50))
+    sheet.paste(ortho(tris, 270, [1, 2], 'Сбоку (Y–Z)', dims(1, 2)), (810, 50))
+    sheet.paste(ortho(tris, 270, [0, 1], 'План (X–Y)', dims(0, 1)), (530, 300))
     d = ImageDraw.Draw(sheet)
     d.text((12, 10), family, fill=(20, 20, 20), font=font(18))
     lines = [
@@ -121,7 +125,11 @@ def render(family, tris, verify, out_path):
 def main(proof_dir, jobs_path):
     out = os.path.join(proof_dir, 'картинки')
     os.makedirs(out, exist_ok=True)
-    rows = [json.loads(line) for line in open(os.path.join(proof_dir, 'verify.jsonl'), encoding='utf-8')]
+    latest = {}
+    for line in open(os.path.join(proof_dir, 'verify.jsonl'), encoding='utf-8'):
+        d = json.loads(line)
+        latest[d['family']] = d
+    rows = list(latest.values())
     n = 0
     for v in rows:
         mesh = v.get('mesh')
