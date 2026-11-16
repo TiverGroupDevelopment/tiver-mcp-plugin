@@ -11,7 +11,8 @@
         "create_family_revolution"
       ],
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -47,7 +48,8 @@
       "section": "checks",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -67,7 +69,8 @@
       "section": "checks",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": []
     },
@@ -77,7 +80,8 @@
       "section": "service",
       "status": "experimental",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -97,7 +101,8 @@
       "section": "revit",
       "status": "experimental",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -124,7 +129,8 @@
       "section": "revit",
       "status": "experimental",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -138,7 +144,8 @@
       "section": "revit",
       "status": "experimental",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -155,7 +162,8 @@
       "section": "code",
       "status": "experimental",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -172,7 +180,8 @@
         "send_code_to_revit"
       ],
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -196,7 +205,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -232,7 +242,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -251,7 +262,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {

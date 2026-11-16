@@ -16,6 +16,11 @@
       "name": "Alterplast",
       "project": "alterplast",
       "description": "Все команды, которыми пользуется проект Альтерпласт: общие команды семейств и узкие процессы проекта."
+    },
+    {
+      "name": "ПроПроект",
+      "project": "proproekt",
+      "description": "Команды проекта ПроПроект: моделирование семейств ТХ (медицинская технология) в Revit 2019 по спецификации, LOD200. Все общие команды Global; свои команды проекта добавляются по мере надобности."
     }
   ],
   "commands": [
@@ -26,7 +31,8 @@
       "section": "service",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -41,7 +47,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -62,7 +69,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -86,7 +94,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": []
     },
@@ -97,7 +106,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -112,7 +122,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -128,7 +139,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -144,7 +156,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -161,7 +174,8 @@
       "status": "validated",
       "tool": "color_elements",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -188,7 +202,8 @@
       "status": "validated",
       "tool": "tag_all_walls",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -206,7 +221,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -222,7 +238,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -238,7 +255,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -254,7 +272,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -272,7 +291,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -290,7 +310,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -305,7 +326,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -366,7 +388,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -420,7 +443,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -437,7 +461,8 @@
       "status": "validated",
       "tool": "tag_all_rooms",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -458,7 +483,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -474,7 +500,8 @@
       "section": "code",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -505,7 +532,8 @@
       "section": "project",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -521,7 +549,8 @@
       "section": "topography",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -542,7 +571,8 @@
       "section": "topography",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -573,7 +603,8 @@
       "section": "topography",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -600,7 +631,8 @@
       "section": "topography",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -625,7 +657,8 @@
       "section": "topography",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -644,7 +677,8 @@
       "section": "topography",
       "status": "validated",
       "sets": [
-        "Global"
+        "Global",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -669,7 +703,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -694,7 +729,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -717,7 +753,8 @@
       "status": "experimental",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -746,7 +783,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -769,7 +807,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -798,7 +837,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -835,7 +875,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -877,7 +918,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -920,7 +962,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -965,7 +1008,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -988,7 +1032,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1010,7 +1055,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1032,7 +1078,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1058,7 +1105,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1077,7 +1125,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1111,7 +1160,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1134,7 +1184,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1157,7 +1208,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1180,7 +1232,8 @@
       "status": "experimental",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1206,7 +1259,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1259,7 +1313,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1285,7 +1340,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1320,7 +1376,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1365,7 +1422,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1408,7 +1466,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1442,7 +1501,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1458,7 +1518,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1504,7 +1565,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1539,7 +1601,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1562,7 +1625,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1591,7 +1655,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1614,7 +1679,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1640,7 +1706,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1675,7 +1742,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1694,7 +1762,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1723,7 +1792,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1765,7 +1835,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1791,7 +1862,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1814,7 +1886,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1839,7 +1912,8 @@
       "status": "experimental",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1873,7 +1947,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1904,7 +1979,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1924,7 +2000,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1966,7 +2043,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -1988,7 +2066,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -2004,7 +2083,8 @@
       "status": "validated",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -2020,7 +2100,8 @@
       "status": "experimental",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -2045,7 +2126,8 @@
       "status": "experimental",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -2088,7 +2170,8 @@
       "status": "experimental",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -2119,7 +2202,8 @@
       "status": "experimental",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -2163,7 +2247,8 @@
       "status": "experimental",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -2194,7 +2279,8 @@
       "status": "experimental",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": []
     },
@@ -2206,7 +2292,8 @@
       "status": "experimental",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -2231,7 +2318,8 @@
       "status": "experimental",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
@@ -2256,7 +2344,8 @@
       "status": "experimental",
       "sets": [
         "Global",
-        "Alterplast"
+        "Alterplast",
+        "ПроПроект"
       ],
       "parameters": [
         {
