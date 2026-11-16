@@ -5,6 +5,11 @@ using System;
 
 namespace revit_mcp_plugin.Core
 {
+    /// <summary>
+    /// Кнопка Revit MCP Switch. Сервер не запущен — запускает его и показывает порт.
+    /// Сервер уже работает (например, после автозапуска) — показывает порт и спрашивает,
+    /// остановить ли его: случайное нажатие не должно выключать сервер, с которым работает агент.
+    /// </summary>
     [Transaction(TransactionMode.Manual)]
     public class MCPServiceConnection : IExternalCommand
     {
@@ -12,23 +17,31 @@ namespace revit_mcp_plugin.Core
         {
             try
             {
-                // 获取socket服务
-                // Obtain socket service.
                 SocketService service = SocketService.Instance;
 
                 if (service.IsRunning)
                 {
-                    service.Stop();
-                    TaskDialog.Show("revitMCP", "Close Server");
+                    var dialog = new TaskDialog("Revit MCP")
+                    {
+                        MainInstruction = $"Сервер MCP работает на порту {service.Port}",
+                        MainContent = "Агент подключается к нему по этому порту. Остановить сервер?",
+                        CommonButtons = TaskDialogCommonButtons.Yes | TaskDialogCommonButtons.No,
+                        DefaultButton = TaskDialogResult.No
+                    };
+                    if (dialog.Show() == TaskDialogResult.Yes)
+                    {
+                        service.Stop();
+                        TaskDialog.Show("Revit MCP", "Сервер MCP остановлен.");
+                    }
                 }
                 else
                 {
                     service.Initialize(commandData.Application);
                     service.Start();
                     if (service.IsRunning)
-                        TaskDialog.Show("revitMCP", $"Open Server on port {service.Port}");
+                        TaskDialog.Show("Revit MCP", $"Сервер MCP запущен на порту {service.Port}.");
                     else
-                        TaskDialog.Show("revitMCP", "Failed to start server: no free port (8080-8089 busy?)");
+                        TaskDialog.Show("Revit MCP", "Сервер MCP не запустился: нет свободного порта (8080–8089).");
                 }
 
                 return Result.Succeeded;

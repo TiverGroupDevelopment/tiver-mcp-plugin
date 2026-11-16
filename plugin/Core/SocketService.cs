@@ -22,12 +22,24 @@ namespace revit_mcp_plugin.Core
         private bool _isRunning;
         private const int DefaultPort = 8080;
         private const int PortRange = 10;
+
+        /// <summary>Переменная окружения процесса Revit: «запусти сервер сам при старте» (1/true).</summary>
+        public const string AutoStartVariable = "REVIT_MCP_AUTOSTART";
+        /// <summary>Переменная окружения процесса Revit: базовый порт сервера для этого процесса.</summary>
+        public const string PortVariable = "REVIT_MCP_PORT";
         private int _basePort = DefaultPort;
         private int _port = DefaultPort;
         private UIApplication _uiApp;
-        private ICommandRegistry _commandRegistry;
+        private RevitCommandRegistry _commandRegistry;
         private ILogger _logger;
         private CommandExecutor _commandExecutor;
+
+        // Встроенный метод: отвечает с потока сокета без обращения к Revit API,
+        // поэтому работает, даже когда Revit занят или ждёт ответа в диалоге.
+        public const string StatusMethod = "mcp_status";
+        private string _revitVersion = "";
+        private string _startedBy = "";
+        private string[] _loadProblems = new string[0];
 
         public static SocketService Instance
         {
@@ -53,29 +65,28 @@ namespace revit_mcp_plugin.Core
             set => _port = value;
         }
 
-        // 初始化
         // Initialization.
-        public void Initialize(UIApplication uiApp)
+        /// <param name="uiApp">Приложение Revit.</param>
+        /// <param name="startedBy">Кто запустил сервер: "button" (кнопка на ленте) или "autostart".</param>
+        public void Initialize(UIApplication uiApp, string startedBy = "button")
         {
             _uiApp = uiApp;
+            _startedBy = startedBy;
 
-            // 初始化事件管理器
             // Initialize ExternalEventManager
             ExternalEventManager.Instance.Initialize(uiApp, _logger);
 
-            // 记录当前 Revit 版本
             // Get the current Revit version.
             var versionAdapter = new RevitMCPSDK.API.Utils.RevitVersionAdapter(_uiApp.Application);
             string currentVersion = versionAdapter.GetRevitVersion();
-            _logger.Info("当前 Revit 版本: {0}\nCurrent Revit version: {0}", currentVersion);
+            _revitVersion = currentVersion;
+            _logger.Info("Current Revit version: {0}", currentVersion);
 
 
 
-            // 创建命令执行器
             // Create CommandExecutor
             _commandExecutor = new CommandExecutor(_commandRegistry, _logger);
 
-            // 加载配置并注册命令
             // Load configuration and register commands.
             ConfigurationManager configManager = new ConfigurationManager(_logger);
             configManager.LoadConfiguration();
@@ -86,13 +97,23 @@ namespace revit_mcp_plugin.Core
             _basePort = configManager.Config?.Settings?.Port > 0
                 ? configManager.Config.Settings.Port
                 : DefaultPort;
+
+            // Порт для этого процесса Revit задаёт тот, кто его запустил (launch_revit):
+            // так он заранее знает, где ждать ответ.
+            if (int.TryParse(Environment.GetEnvironmentVariable(PortVariable), out int requestedPort) && requestedPort > 0)
+            {
+                _basePort = requestedPort;
+            }
             _port = _basePort;
 
-            // 加载命令
             // Load command.
+            // Сервер включают и выключают кнопкой много раз за сеанс: реестр чистится,
+            // чтобы повторная загрузка не выглядела как дубли.
+            _commandRegistry.ClearCommands();
             CommandManager commandManager = new CommandManager(
                 _commandRegistry, _logger, configManager, _uiApp);
             commandManager.LoadCommands();
+            _loadProblems = commandManager.Problems.ToArray();
 
             _logger.Info($"Socket service initialized on port {_port}");
         }
@@ -107,7 +128,9 @@ namespace revit_mcp_plugin.Core
                 TcpListener listener = null;
                 try
                 {
-                    listener = new TcpListener(IPAddress.Any, port);
+                    // Только локальный адрес: среди команд есть выполнение произвольного кода
+                    // (send_code_to_revit), из сети порт недоступен.
+                    listener = new TcpListener(IPAddress.Loopback, port);
                     listener.Start();
                 }
                 catch (SocketException)
@@ -195,7 +218,6 @@ namespace revit_mcp_plugin.Core
 
                 while (_isRunning && tcpClient.Connected)
                 {
-                    // 读取客户端消息
                     // Read client messages.
                     int bytesRead = 0;
 
@@ -205,14 +227,12 @@ namespace revit_mcp_plugin.Core
                     }
                     catch (IOException)
                     {
-                        // 客户端断开连接
                         // Client disconnected.
                         break;
                     }
 
                     if (bytesRead == 0)
                     {
-                        // 客户端断开连接
                         // Client disconnected.
                         break;
                     }
@@ -230,11 +250,10 @@ namespace revit_mcp_plugin.Core
                     Array.Copy(pending.GetBuffer(), messageLength, tail, 0, rest);
                     pending = new MemoryStream();
                     pending.Write(tail, 0, rest);
-                    System.Diagnostics.Trace.WriteLine($"收到消息: {message}\nReceived message: {message}");
+                    System.Diagnostics.Trace.WriteLine($"Received message: {message}");
 
                     string response = ProcessJsonRPCRequest(message);
 
-                    // 发送响应
                     // Send response.
                     byte[] responseData = Encoding.UTF8.GetBytes(response);
                     stream.Write(responseData, 0, responseData.Length);
@@ -291,11 +310,9 @@ namespace revit_mcp_plugin.Core
 
             try
             {
-                // 解析JSON-RPC请求
                 // Parse JSON-RPC requests.
                 request = JsonConvert.DeserializeObject<JsonRPCRequest>(requestJson);
 
-                // 验证请求格式是否有效
                 // Verify that the request format is valid.
                 if (request == null || !request.IsValid())
                 {
@@ -306,7 +323,11 @@ namespace revit_mcp_plugin.Core
                     );
                 }
 
-                // 查找命令
+                if (request.Method == StatusMethod)
+                {
+                    return CreateSuccessResponse(request.Id, GetStatus());
+                }
+
                 // Search for the command in the registry.
                 if (!_commandRegistry.TryGetCommand(request.Method, out var command))
                 {
@@ -314,7 +335,6 @@ namespace revit_mcp_plugin.Core
                         $"Method '{request.Method}' not found");
                 }
 
-                // 执行命令
                 // Execute command.
                 try
                 {                
@@ -329,7 +349,6 @@ namespace revit_mcp_plugin.Core
             }
             catch (JsonException)
             {
-                // JSON解析错误
                 // JSON parsing error.
                 return CreateErrorResponse(
                     null,
@@ -339,7 +358,6 @@ namespace revit_mcp_plugin.Core
             }
             catch (Exception ex)
             {
-                // 处理请求时的其他错误
                 // Catch other errors produced when processing requests.
                 return CreateErrorResponse(
                     null,
@@ -347,6 +365,27 @@ namespace revit_mcp_plugin.Core
                     $"Internal error: {ex.Message}"
                 );
             }
+        }
+
+        /// <summary>
+        /// Состояние сервера без обращения к Revit API: версия Revit, порт, процесс,
+        /// число загруженных команд и проблемы загрузки (дубли имён, отсутствующие сборки).
+        /// </summary>
+        private object GetStatus()
+        {
+            var commands = new System.Collections.Generic.List<string>(_commandRegistry.GetRegisteredCommands());
+            commands.Sort(StringComparer.Ordinal);
+            return new
+            {
+                plugin = "tiver-mcp",
+                revitVersion = _revitVersion,
+                port = _port,
+                processId = System.Diagnostics.Process.GetCurrentProcess().Id,
+                startedBy = _startedBy,
+                commandCount = commands.Count,
+                commands,
+                loadProblems = _loadProblems
+            };
         }
 
         private string CreateSuccessResponse(string id, object result)

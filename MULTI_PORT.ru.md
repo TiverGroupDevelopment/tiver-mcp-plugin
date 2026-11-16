@@ -2,6 +2,22 @@
 
 Инструкция для случая, когда на одном компьютере открыто несколько Revit (например, 2019 и 2020) и каждым нужно управлять через MCP.
 
+## Короткий путь: один сервер и переключение
+
+Отдельный MCP-сервер на каждый Revit больше не обязателен. Один сервер находит запущенные Revit сам и переключается между ними:
+
+| Инструмент | Что делает |
+|---|---|
+| `list_revit_instances` | какие Revit с сервером запущены: порт, версия, число команд, ошибки загрузки; с `details: true` — открытые документы |
+| `use_revit_instance port: 8081` или `version: "2019"` | переключает сессию на этот Revit |
+| `launch_revit version: "2019"` | запускает Revit, ждёт сервер и переключает сессию на него; уже запущенный Revit этой версии не дублирует |
+
+Переключение действует до перезапуска MCP-сервера сессии. Способ ниже (свой сервер на каждый порт) нужен, когда агент должен работать с двумя Revit одновременно в одной сессии.
+
+Revit, запущенный через `launch_revit`, поднимает сервер сам: кнопку нажимать не нужно, открывать проект — тоже. Revit, открытый вручную, сервер сам не поднимает; включить это для всех запусков: `.\scripts\install-local.ps1 -Year 2019 -AutoStart on`.
+
+Плагин слушает только `127.0.0.1`: с других компьютеров сети порт недоступен.
+
 ## Как это устроено
 
 ```
@@ -12,7 +28,7 @@ Claude ──► MCP-сервер "revit-local"   (REVIT_PORT=8080) ──► Re
 - **Плагин в Revit** открывает TCP-порт. Сначала он пробует базовый порт из настроек (по умолчанию `8080`). Если порт занят другим Revit, плагин берёт следующий свободный: `8081`, `8082` и так до `8089`.
 - **MCP-сервер** (`server/build/index.js`) подключается к одному Revit, адрес которого задают переменные окружения:
   - `REVIT_PORT` — порт, по умолчанию `8080`;
-  - `REVIT_HOST` — хост, по умолчанию `localhost`.
+  - `REVIT_HOST` — хост, по умолчанию `127.0.0.1`.
 - На каждый Revit регистрируется **свой** MCP-сервер со своим именем и своим `REVIT_PORT`. Инструменты в Claude получают префикс по имени сервера: `mcp__revit-local__...` и `mcp__revit-local-2__...`.
 
 ## 1. Установить плагин в каждую версию Revit
@@ -60,7 +76,7 @@ dotnet build commandset -c "Debug R20"
 ## 3. Запустить Revit и включить MCP
 
 1. Запустите каждый Revit.
-2. На вкладке **mcp-servers-for-revit** нажмите кнопку включения сервиса. Появится окно `Open Server on port N`: это порт данного Revit.
+2. На вкладке **Надстройки**, панель **Revit MCP Plugin**, нажмите кнопку **Revit MCP Switch**. Появится окно `Open Server on port N`: это порт данного Revit.
 3. Если окно не заметили, порт есть в журнале плагина:
 
    ```
@@ -79,13 +95,13 @@ dotnet build commandset -c "Debug R20"
     "revit-local": {
       "type": "stdio",
       "command": "node",
-      "args": ["D:/Repos/tiver-mcp-plugin/server/build/index.js"],
+      "args": ["${CLAUDE_PROJECT_DIR:-.}/server/build/index.js"],
       "env": { "NODE_OPTIONS": "--dns-result-order=ipv4first", "REVIT_PORT": "8080" }
     },
     "revit-local-2": {
       "type": "stdio",
       "command": "node",
-      "args": ["D:/Repos/tiver-mcp-plugin/server/build/index.js"],
+      "args": ["${CLAUDE_PROJECT_DIR:-.}/server/build/index.js"],
       "env": { "NODE_OPTIONS": "--dns-result-order=ipv4first", "REVIT_PORT": "8081" }
     }
   }
@@ -93,22 +109,6 @@ dotnet build commandset -c "Debug R20"
 ```
 
 Сервер нужно один раз собрать (`npm install` и `npm run build` в папке `server`). Для третьего Revit добавьте `revit-local-3` с `REVIT_PORT=8082` и т. д.
-
-Вместо локальной сборки можно использовать npm-пакет:
-
-```json
-"revit-2019": {
-  "command": "cmd",
-  "args": ["/c", "npx", "-y", "mcp-server-for-revit"],
-  "env": { "REVIT_PORT": "8081" }
-}
-```
-
-Или из терминала:
-
-```bash
-claude mcp add revit-2019 -e REVIT_PORT=8081 -- cmd /c npx -y mcp-server-for-revit
-```
 
 `NODE_OPTIONS=--dns-result-order=ipv4first` нужен, чтобы `localhost` разрешался в `127.0.0.1`: плагин слушает только IPv4.
 
