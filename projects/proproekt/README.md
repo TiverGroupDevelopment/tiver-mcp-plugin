@@ -33,6 +33,10 @@
 | [tools/make_jobs.py](tools/make_jobs.py) | Python | задания `jobs.json` по выгрузке таблицы и снимкам исходников |
 | [build_families](scripts/build_families.cs) | Revit 2019 | семейства по заданиям: кубик, цилиндр, перенос исходника; три параметра ADSK; сохранение |
 | [verify_families](scripts/verify_families.cs) | Revit 2019 | проверка готовых `.rfa` по требованиям, сетки для картинок |
+| [fix_position_type](scripts/fix_position_type.cs) | Revit 2019 | `ADSK_Позиция` → параметр типа во всех `.rfa` по `jobs.json` (пачками `from`/`count`) |
+| [list_open_documents](scripts/list_open_documents.cs) | Revit | открытые документы: путь, изменён ли |
+| [list_family_forms](scripts/list_family_forms.cs) | Revit | формы семейства с Id и габаритами |
+| [remove_family_forms](scripts/remove_family_forms.cs) | Revit | удалить формы по зонам, пробный режим `dryRun` |
 | [tools/check_rules.mjs](tools/check_rules.mjs) | Node, Revit 2019 | `check_family_rules` с проверками профиля `proproekt` по всем файлам |
 | [tools/render_proof.py](tools/render_proof.py) | Python | изометрия и проекции с габаритами |
 | [tools/make_plan.py](tools/make_plan.py), [tools/make_report.py](tools/make_report.py) | Python | план моделирования и отчёт |

@@ -121,7 +121,8 @@ def main(values_path, sources_dir, jobs_path):
                 raise SystemExit(f'строка {row_no}: кубик без габаритов — {family}')
             job.update(kind='box', template=LEVEL_TEMPLATE, category=kubik_category(adsk_name), faceBased=False, size=target)
         elif low.startswith('цилиндр') or (dims and dims['cyl'] and source not in sources):
-            d, h = dims['nums'][0], dims['nums'][1]
+            # Ø440х470 — диаметр и высота; 2100х2100х3180 — Ш×Г×В, высота последняя
+            d, h = dims['nums'][0], dims['nums'][-1]
             job.update(kind='cylinder', template=LEVEL_TEMPLATE, faceBased=False, size=[d, d, h],
                        category='OST_SpecialityEquipment' if not low.startswith('доработать') else None)
         else:

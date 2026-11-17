@@ -30,7 +30,11 @@ public static class ProVerify
         var r = new JObject { ["family"] = family, ["path"] = path };
         if (!File.Exists(path)) { r["error"] = "файла нет"; return r; }
         r["savedInVersion"] = BasicFileInfo.Extract(path).SavedInVersion;
-        var doc = app.OpenDocumentFile(path);
+        Document doc = null;
+        foreach (Document d in app.Documents)
+            if (string.Equals(d.PathName, path, StringComparison.OrdinalIgnoreCase)) doc = d;
+        var wasOpen = doc != null; // открытый пользователем документ проверяем на месте и не закрываем
+        if (doc == null) doc = app.OpenDocumentFile(path);
         try
         {
             r["title"] = doc.Title;
@@ -103,7 +107,7 @@ public static class ProVerify
         }
         finally
         {
-            doc.Close(false);
+            if (!wasOpen) doc.Close(false);
         }
         return r;
     }

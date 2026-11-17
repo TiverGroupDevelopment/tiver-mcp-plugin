@@ -822,7 +822,7 @@ public static class ProBuild
             {
                 new object[] { "ADSK_Наименование", false, (string)job["adskName"] },
                 new object[] { "ADSK_Марка", false, (string)job["adskMark"] },
-                new object[] { "ADSK_Позиция", true, (string)job["position"] },
+                new object[] { "ADSK_Позиция", false, (string)job["position"] },
             };
             return Run(doc, "Параметры ADSK", () =>
             {

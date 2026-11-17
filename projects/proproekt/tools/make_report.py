@@ -22,7 +22,7 @@ REQ = [
     ('category', 'Категория по заданию, допустима в 2019 (PP-10)'),
     ('name', 'ADSK_Наименование: общий, GUID из ФОП, тип, значение = колонка G (PP-04)'),
     ('mark', 'ADSK_Марка: общий, GUID из ФОП, тип, значение = колонка J (PP-04)'),
-    ('pos', 'ADSK_Позиция: общий, GUID из ФОП, экземпляр, значение = колонка I (PP-04)'),
+    ('pos', 'ADSK_Позиция: общий, GUID из ФОП, тип, значение = колонка I (PP-04)'),
     ('type', 'Один типоразмер с именем семейства (PP-05)'),
     ('size', 'Габарит = заданию: ±1 мм по спецификации, ±5 мм при допущении (PP-08)'),
     ('origin', 'Точка вставки: центр в плане, низ на 0 / на грани (PP-09)'),
@@ -64,7 +64,7 @@ def evaluate(job, b, v, r):
 
     res['name'], why['name'] = par('ADSK_Наименование', False, job['adskName'])
     res['mark'], why['mark'] = par('ADSK_Марка', False, job['adskMark'])
-    res['pos'], why['pos'] = par('ADSK_Позиция', True, job['position'])
+    res['pos'], why['pos'] = par('ADSK_Позиция', False, job['position'])
     res['type'] = v.get('types') == [fam]
     why['type'] = ', '.join(v.get('types') or [])
     size = v.get('size') or [0, 0, 0]

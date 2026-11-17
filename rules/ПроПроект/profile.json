@@ -62,7 +62,7 @@
       "parameters": [
         { "name": "ADSK_Наименование", "instance": false },
         { "name": "ADSK_Марка", "instance": false },
-        { "name": "ADSK_Позиция", "instance": true }
+        { "name": "ADSK_Позиция", "instance": false }
       ]
     },
     "materialParameter": null,
