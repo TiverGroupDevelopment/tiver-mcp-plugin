@@ -38,7 +38,7 @@
 
 | Набор | Команд | Что входит |
 |---|---|---|
-| Global | 84 C# + 12 серверных | всё, что пригодится в любом проекте: модель проекта, топография, выполнение кода, редактор семейств, запуск Revit, правила |
+| Global | 96 C# + 12 серверных | всё, что пригодится в любом проекте: модель проекта, топография, выполнение кода, редактор семейств, запуск Revit, правила |
 | Alterplast | 56 | все команды прежнего набора семейств: 55 общих (входят и в Global) и 1 только для проекта — `create_family_inspection_copy` |
 
 В окне настроек плагина в Revit команды сгруппированы по наборам. Команда из двух наборов видна в обоих, галочка у неё одна. В реестр плагина она попадает один раз. Агенту доступны все команды в любой сессии.
@@ -111,7 +111,7 @@
 
 ## Текущее состояние (16.11.2026)
 
-- **Наборы.** Набор Alterplast — все 56 команд прежнего набора семейств `RevitMCPFamilyCommandSet`. 55 из них входят и в Global: в их коде нет привязки к проекту (имена параметров, оси, пороги приходят аргументами или из профиля правил), и они нужны при моделировании любых семейств. Только в Alterplast — `create_family_inspection_copy`: копия семейства для инспектора по процессу Альтерпласта (правило ALT-12 сейчас этот процесс приостанавливает). 29 команд модели проекта (стены, топография, выполнение кода) и 12 инструментов сервера — только в Global.
-- **Статусы.** `"status": "experimental"` у 13 команд семейств, которых нет в отчёте тестирования от 11.11.2026: `set_family_parameter_values`, `lock_family_sketch`, `export_family_lookup_tables`, `list_project_families`, `place_family_in_project`, `open_family_in_editor`, `create_family_model_text`, `get_family_mass`, `diagnose_revit`, `dismiss_revit_dialog`, `check_family_rules`, `create_family_inspection_copy`, `setup_family_connectors`. Остальные — `validated`. Экспериментальные команды в Global — общие по назначению, но ещё не проверены.
+- **Наборы.** Набор Alterplast — все 56 команд прежнего набора семейств `RevitMCPFamilyCommandSet`. 55 из них входят и в Global: в их коде нет привязки к проекту (имена параметров, оси, пороги приходят аргументами или из профиля правил), и они нужны при моделировании любых семейств. Только в Alterplast — `create_family_inspection_copy`: копия семейства для инспектора по процессу Альтерпласта (правило ALT-12 сейчас этот процесс приостанавливает). 40 команд модели проекта (стены, витражи, типы, материалы, спецификации, виды, топография, выполнение кода), 1 команда семейств (`create_family_profile`) и 12 инструментов сервера — только в Global.
+- **Статусы.** `"status": "experimental"` у 13 команд семейств, которых нет в отчёте тестирования от 11.11.2026: `set_family_parameter_values`, `lock_family_sketch`, `export_family_lookup_tables`, `list_project_families`, `place_family_in_project`, `open_family_in_editor`, `create_family_model_text`, `get_family_mass`, `diagnose_revit`, `dismiss_revit_dialog`, `check_family_rules`, `create_family_inspection_copy`, `setup_family_connectors`. Ещё 12 команд, добавленных 18.11.2026, тоже `experimental`: `get_element_types`, `edit_element_type`, `edit_elements`, `create_project_materials`, `set_wall_layers`, `create_curtain_wall`, `get_curtain_wall_info`, `check_curtain_layout`, `create_schedule`, `capture_project_view`, `set_open_views`, `create_family_profile`. Остальные — `validated`. Экспериментальные команды в Global — общие по назначению, но ещё не проверены.
 - **Правила.** `global` (GEO-01…GEO-03) и `adsk` (ADSK-01, ADSK-02) — `"status": "draft"`: состав взят из профиля `alterplast` 1.1.
 - **Кандидаты в общие правила** из проекта Альтерпласт: ALT-04 (вложенные не «Общие»), ALT-14 (центр в начале координат), ALT-21 (округление). Кандидаты в пакет «фитинги MEP»: ALT-05…ALT-07, ALT-19, MP-01, MP-02, MP-06.

@@ -2317,6 +2317,367 @@
           "name": "offsetMm"
         }
       ]
+    },
+    {
+      "commandName": "create_family_profile",
+      "description": "Нарисовать контур профиля (импост, сдвиг) в семействе профиля",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "geometry",
+      "status": "experimental",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "loops",
+          "required": true
+        },
+        {
+          "name": "clear"
+        },
+        {
+          "name": "overwriteProjectValues"
+        }
+      ]
+    },
+    {
+      "commandName": "create_project_materials",
+      "description": "Создать или изменить материалы в проекте",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "graphics",
+      "status": "experimental",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "materials",
+          "required": true
+        },
+        {
+          "name": "project"
+        }
+      ]
+    },
+    {
+      "commandName": "get_element_types",
+      "description": "Типы элементов проекта, включая системные (витражи, импосты, панели), с параметрами",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "experimental",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "kind"
+        },
+        {
+          "name": "name"
+        },
+        {
+          "name": "includeParameters"
+        },
+        {
+          "name": "project"
+        }
+      ]
+    },
+    {
+      "commandName": "edit_element_type",
+      "description": "Копировать тип и задать параметры типа (витраж, импост, стена, семейство)",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "experimental",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "type",
+          "required": true
+        },
+        {
+          "name": "kind"
+        },
+        {
+          "name": "duplicateAs"
+        },
+        {
+          "name": "parameters"
+        },
+        {
+          "name": "project"
+        }
+      ]
+    },
+    {
+      "commandName": "create_curtain_wall",
+      "description": "Создать витраж или стену по линии со смещением",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "experimental",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "type",
+          "required": true
+        },
+        {
+          "name": "start",
+          "required": true
+        },
+        {
+          "name": "end",
+          "required": true
+        },
+        {
+          "name": "baseLevel",
+          "required": true
+        },
+        {
+          "name": "baseOffset"
+        },
+        {
+          "name": "topLevel"
+        },
+        {
+          "name": "topOffset"
+        },
+        {
+          "name": "height"
+        },
+        {
+          "name": "offset"
+        },
+        {
+          "name": "flip"
+        },
+        {
+          "name": "allowJoins"
+        },
+        {
+          "name": "select"
+        },
+        {
+          "name": "project"
+        }
+      ]
+    },
+    {
+      "commandName": "get_curtain_wall_info",
+      "description": "Сетка витража, импосты и панели: координаты, длины, размеры",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "experimental",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "ids"
+        },
+        {
+          "name": "wallType"
+        },
+        {
+          "name": "details"
+        },
+        {
+          "name": "project"
+        }
+      ]
+    },
+    {
+      "commandName": "check_curtain_layout",
+      "description": "Проверить раскладку витражей: длина импостов, совпадение осей",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "checks",
+      "status": "experimental",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "ids"
+        },
+        {
+          "name": "wallType"
+        },
+        {
+          "name": "maxMullionLength"
+        },
+        {
+          "name": "alignWith"
+        },
+        {
+          "name": "toleranceMm"
+        },
+        {
+          "name": "selectFailed"
+        },
+        {
+          "name": "project"
+        }
+      ]
+    },
+    {
+      "commandName": "edit_elements",
+      "description": "Задать параметры экземпляров и развернуть стены",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "experimental",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "ids",
+          "required": true
+        },
+        {
+          "name": "parameters"
+        },
+        {
+          "name": "flip"
+        },
+        {
+          "name": "project"
+        }
+      ]
+    },
+    {
+      "commandName": "create_schedule",
+      "description": "Создать спецификацию по категории и вернуть её строки",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "checks",
+      "status": "experimental",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "category",
+          "required": true
+        },
+        {
+          "name": "name",
+          "required": true
+        },
+        {
+          "name": "fields",
+          "required": true
+        },
+        {
+          "name": "groupBy"
+        },
+        {
+          "name": "itemized"
+        },
+        {
+          "name": "open"
+        },
+        {
+          "name": "project"
+        }
+      ]
+    },
+    {
+      "commandName": "capture_project_view",
+      "description": "3D-вид проекта с рамкой: снимок PNG и открытие в Revit",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "checks",
+      "status": "experimental",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "name"
+        },
+        {
+          "name": "sectionBox"
+        },
+        {
+          "name": "elementIds"
+        },
+        {
+          "name": "marginMm"
+        },
+        {
+          "name": "direction"
+        },
+        {
+          "name": "style"
+        },
+        {
+          "name": "hideTypes"
+        },
+        {
+          "name": "pixels"
+        },
+        {
+          "name": "open"
+        },
+        {
+          "name": "project"
+        }
+      ]
+    },
+    {
+      "commandName": "set_open_views",
+      "description": "Открыть нужный вид документа и закрыть остальные вкладки видов",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "revit",
+      "status": "experimental",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "document"
+        },
+        {
+          "name": "view"
+        },
+        {
+          "name": "closeOthers"
+        },
+        {
+          "name": "zoom"
+        }
+      ]
+    },
+    {
+      "commandName": "set_wall_layers",
+      "description": "Задать слои базовой стены (утеплитель, основание) в типе",
+      "assemblyPath": "RevitMCPCommandSet.dll",
+      "section": "project",
+      "status": "experimental",
+      "sets": [
+        "Global"
+      ],
+      "parameters": [
+        {
+          "name": "type",
+          "required": true
+        },
+        {
+          "name": "duplicateAs"
+        },
+        {
+          "name": "layers",
+          "required": true
+        },
+        {
+          "name": "project"
+        }
+      ]
     }
   ]
 }
